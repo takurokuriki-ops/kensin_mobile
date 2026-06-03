@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>健診 下書き（歯式タイプ）</title>
+<style>
+:root{
+  --green:#1a6b3c; --green-d:#0f4f2a; --blue:#1a3f6f; --blue-l:#2471a3;
+  --bg:#f2f4f3; --card:#fff; --line:#dfe3e1; --txt:#222; --sub:#666;
+  --warn:#c0392b; --gold:#b8860b;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP",sans-serif;
+  background:var(--bg);color:var(--txt);font-size:15px;line-height:1.5;padding-bottom:90px;}
+.hdr{position:sticky;top:0;z-index:50;background:var(--green);color:#fff;padding:11px 14px;
+  display:flex;align-items:center;justify-content:space-between;box-shadow:0 2px 6px rgba(0,0,0,.15);}
+.hdr h1{font-size:16px;margin:0;font-weight:700;}
+.hdr .save-st{font-size:11px;opacity:.9;}
+.wrap{max-width:680px;margin:0 auto;padding:12px;}
+
+/* 共通設定 */
+.shared{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:14px;}
+.shared h2{font-size:13px;margin:0 0 10px;color:var(--green-d);font-weight:700;
+  display:flex;align-items:center;gap:6px;}
+.fld{margin-bottom:10px;}
+.fld:last-child{margin-bottom:0;}
+.fld label{display:block;font-size:12px;color:var(--sub);margin-bottom:3px;font-weight:600;}
+.fld input{width:100%;padding:10px 11px;border:1px solid var(--line);border-radius:8px;
+  font-size:15px;background:#fafbfa;}
+.fld input:focus{outline:none;border-color:var(--green);background:#fff;}
+.fld-row{display:flex;gap:8px;}
+.fld-row .fld{flex:1;}
+
+/* 患者カード */
+.pcard{background:var(--card);border:1px solid var(--line);border-radius:12px;
+  margin-bottom:14px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.05);}
+.pcard-hd{background:#eef4f0;padding:10px 12px;display:flex;align-items:center;gap:8px;
+  border-bottom:1px solid var(--line);}
+.pcard-no{background:var(--green);color:#fff;width:24px;height:24px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;}
+.pcard-hd .pname{flex:1;padding:8px 10px;border:1px solid var(--line);border-radius:7px;
+  font-size:15px;font-weight:600;background:#fff;}
+.pcard-hd .proom{width:80px;padding:8px 10px;border:1px solid var(--line);border-radius:7px;
+  font-size:14px;background:#fff;}
+.pcard-del{background:none;border:none;color:var(--warn);font-size:20px;padding:4px 6px;cursor:pointer;flex-shrink:0;}
+.pcard-bd{padding:12px;}
+
+.sec{margin-bottom:14px;}
+.sec:last-child{margin-bottom:0;}
+.sec-t{font-size:12px;font-weight:700;color:var(--green-d);margin-bottom:7px;
+  display:flex;align-items:center;gap:5px;}
+
+/* チェックボタン群 */
+.chips{display:flex;flex-wrap:wrap;gap:6px;}
+.chip{padding:8px 12px;border:1.5px solid var(--line);border-radius:20px;background:#fafbfa;
+  font-size:13px;cursor:pointer;user-select:none;transition:all .12s;font-weight:600;color:#555;}
+.chip.on{background:var(--green);border-color:var(--green);color:#fff;}
+.chip.care.on{background:var(--blue-l);border-color:var(--blue-l);}
+
+/* メモ */
+.memo{width:100%;padding:9px 10px;border:1px solid var(--line);border-radius:8px;
+  font-size:14px;background:#fafbfa;resize:vertical;min-height:48px;font-family:inherit;}
+.memo:focus{outline:none;border-color:var(--green);background:#fff;}
+
+/* 歯式 */
+.tooth-open{width:100%;padding:11px;border:1.5px dashed var(--green);border-radius:9px;
+  background:#f3faf5;color:var(--green-d);font-size:14px;font-weight:700;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;gap:7px;}
+.tooth-open.has{border-style:solid;background:var(--green);color:#fff;}
+
+/* 写真 */
+.photo-area{margin-top:8px;}
+.photo-thumbs{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;}
+.photo-thumb{position:relative;width:72px;height:72px;border-radius:8px;overflow:hidden;
+  border:1px solid var(--line);}
+.photo-thumb img{width:100%;height:100%;object-fit:cover;}
+.photo-thumb .rm{position:absolute;top:2px;right:2px;background:rgba(192,57,43,.92);color:#fff;
+  border:none;border-radius:50%;width:20px;height:20px;font-size:13px;cursor:pointer;line-height:1;}
+.photo-thumb .dl{position:absolute;bottom:0;left:0;right:0;background:rgba(26,107,60,.92);color:#fff;
+  border:none;font-size:9px;padding:2px;cursor:pointer;}
+.photo-add{width:100%;padding:10px;border:1.5px dashed var(--blue-l);border-radius:9px;
+  background:#f0f6fb;color:var(--blue);font-size:13px;font-weight:700;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;gap:6px;}
+.photo-hint{font-size:11px;color:var(--sub);margin-top:6px;line-height:1.45;}
+
+/* 行追加 */
+.add-row{width:100%;padding:14px;border:2px dashed var(--green);border-radius:12px;
+  background:#f3faf5;color:var(--green-d);font-size:15px;font-weight:700;cursor:pointer;margin-bottom:14px;}
+
+/* フッター送信バー */
+.footer{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--line);
+  padding:10px 12px;display:flex;gap:8px;box-shadow:0 -2px 8px rgba(0,0,0,.08);z-index:50;}
+.footer .btn{flex:1;padding:13px;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;}
+.btn-line{background:#06c755;color:#fff;}
+.btn-file{background:var(--blue);color:#fff;}
+
+/* 歯式モーダル */
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:100;display:none;
+  align-items:flex-end;justify-content:center;}
+.modal.open{display:flex;}
+.modal-c{background:#fff;width:100%;max-width:680px;max-height:94vh;border-radius:16px 16px 0 0;
+  display:flex;flex-direction:column;overflow:hidden;}
+.modal-hd{padding:12px 14px;background:var(--green);color:#fff;display:flex;
+  align-items:center;justify-content:between;gap:10px;}
+.modal-hd .t{flex:1;font-size:15px;font-weight:700;}
+.modal-hd .x{background:rgba(255,255,255,.2);border:none;color:#fff;width:30px;height:30px;
+  border-radius:50%;font-size:17px;cursor:pointer;}
+.modal-bd{padding:12px 14px;overflow-y:auto;flex:1;}
+.modal-ft{padding:10px 14px;border-top:1px solid var(--line);display:flex;gap:8px;}
+.modal-ft .btn{flex:1;padding:12px;border:none;border-radius:9px;font-size:15px;font-weight:700;cursor:pointer;}
+.btn-ok{background:var(--green);color:#fff;}
+.btn-cl{background:#eee;color:#333;}
+
+/* 記号パレット */
+.sym-bar{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px;position:sticky;top:0;
+  background:#fff;padding:6px 0;border-bottom:1px solid var(--line);z-index:2;}
+.sym-btn{padding:7px 9px;border:1.5px solid #ccc;border-radius:7px;font-size:12px;font-weight:700;
+  cursor:pointer;background:#fafafa;color:#333;min-width:38px;text-align:center;}
+.sym-btn.sel{outline:3px solid var(--green);outline-offset:1px;}
+.sym-quick{display:flex;gap:6px;margin-bottom:8px;}
+.sym-quick button{flex:1;padding:7px;border:1px solid #bbb;border-radius:7px;font-size:12px;
+  font-weight:700;cursor:pointer;}
+.q-x{background:#888;color:#fff;border-color:#888;}
+.q-o{background:#2e7d32;color:#fff;border-color:#2e7d32;}
+.q-c{background:#f0f0f0;color:#333;}
+.chart-hint{font-size:11px;color:var(--sub);margin-bottom:8px;text-align:center;}
+
+/* リンク表示モーダル */
+.link-box{width:100%;padding:10px;border:1px solid var(--line);border-radius:8px;
+  font-size:12px;background:#f7f7f7;word-break:break-all;max-height:120px;overflow-y:auto;color:#444;}
+.copy-ok{color:var(--green);font-weight:700;font-size:13px;text-align:center;margin-top:8px;display:none;}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <h1>🦷 健診 下書き</h1>
+  <span class="save-st" id="saveSt">自動保存ON</span>
+</div>
+
+<div class="wrap">
+
+  <!-- 共通設定 -->
+  <div class="shared">
+    <h2>📋 共通情報</h2>
+    <div class="fld"><label>施設名</label><input id="s-fac" type="text" placeholder="例：○○ホーム"></div>
+    <div class="fld-row">
+      <div class="fld"><label>健診日</label><input id="s-date" type="text" placeholder="例：令和8年6月3日"></div>
+      <div class="fld"><label>医師名</label><input id="s-doc" type="text" placeholder="例：石橋"></div>
+    </div>
+    <div class="fld"><label>医院名</label><input id="s-cli" type="text" placeholder="例：○○歯科"></div>
+    <div class="fld"><label>TEL</label><input id="s-tel" type="text" placeholder="例：050-0000-0000"></div>
+  </div>
+
+  <!-- 患者カード群 -->
+  <div id="patients"></div>
+
+  <button class="add-row" onclick="addPatient()">＋ 患者を追加</button>
+
+</div>
+
+<!-- フッター -->
+<div class="footer">
+  <button class="btn btn-file" onclick="saveDataFile()">💾 データを保存して送る</button>
+</div>
+
+<!-- 歯式モーダル -->
+<div class="modal" id="toothModal" onclick="if(event.target===this)closeTooth()">
+  <div class="modal-c">
+    <div class="modal-hd">
+      <span class="t" id="toothTitle">歯式入力</span>
+      <button class="x" onclick="closeTooth()">✕</button>
+    </div>
+    <div class="modal-bd">
+      <div class="chart-hint">記号を選んでから歯をタップ／もう一度タップで消去</div>
+      <div class="sym-quick">
+        <button class="q-x" onclick="fillAll('x')">全部 ×欠損</button>
+        <button class="q-o" onclick="fillAll('o')">全部 ○健康</button>
+        <button class="q-c" onclick="fillAll('')">全消去</button>
+      </div>
+      <div class="sym-bar" id="symBar"></div>
+      <div id="chartHost"></div>
+    </div>
+    <div class="modal-ft">
+      <button class="btn btn-cl" onclick="closeTooth()">閉じる</button>
+      <button class="btn btn-ok" onclick="saveTooth()">この内容で決定</button>
+    </div>
+  </div>
+</div>
+
+<!-- ファイル保存案内モーダル -->
+<div class="modal" id="saveModal" onclick="if(event.target===this)closeSaveModal()">
+  <div class="modal-c">
+    <div class="modal-hd">
+      <span class="t">データを保存しました</span>
+      <button class="x" onclick="closeSaveModal()">✕</button>
+    </div>
+    <div class="modal-bd">
+      <p style="font-size:14px;margin:0 0 12px;line-height:1.6;">
+        <b id="savedFileName" style="color:var(--green-d);"></b><br>
+        という名前でデータを保存しました。</p>
+      <div style="background:#f0f6fb;border-radius:9px;padding:12px;font-size:13px;line-height:1.7;">
+        <b>📲 営業への送り方（LINE）</b><br>
+        ① LINEのトークを開く<br>
+        ② 「＋」→「<b>ファイル</b>」をタップ<br>
+        ③ 保存した「<b>.json</b>」ファイルを選んで送信<br>
+        <span style="color:#c0392b;font-size:12px;">※「写真」や「アルバム」ではなく必ず「ファイル」から送ってください</span>
+      </div>
+      <p style="font-size:12px;color:#666;margin:12px 0 0;line-height:1.6;">
+        💡 写真がある場合は、各写真の「保存」ボタンで
+        「<b>日付_氏名_番号.jpg</b>」を保存し、同じく「ファイル」で送ってください。</p>
+    </div>
+    <div class="modal-ft">
+      <button class="btn btn-ok" onclick="closeSaveModal()">OK</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ===== 清書ツールv2と共有する定数 ===== */
+// 歯配置（FDI・上顎右→左、下顎右→左）
+const TD=[
+ {id:'UR8',n:8},{id:'UR7',n:7},{id:'UR6',n:6},{id:'UR5',n:5},{id:'UR4',n:4},{id:'UR3',n:3},{id:'UR2',n:2},{id:'UR1',n:1},
+ {id:'UL1',n:1},{id:'UL2',n:2},{id:'UL3',n:3},{id:'UL4',n:4},{id:'UL5',n:5},{id:'UL6',n:6},{id:'UL7',n:7},{id:'UL8',n:8},
+ {id:'LR8',n:8},{id:'LR7',n:7},{id:'LR6',n:6},{id:'LR5',n:5},{id:'LR4',n:4},{id:'LR3',n:3},{id:'LR2',n:2},{id:'LR1',n:1},
+ {id:'LL1',n:1},{id:'LL2',n:2},{id:'LL3',n:3},{id:'LL4',n:4},{id:'LL5',n:5},{id:'LL6',n:6},{id:'LL7',n:7},{id:'LL8',n:8}
+];
+// 記号セット（清書ツールのTOOLS_Cと同一）
+const TOOLS_C=[
+ {t:'x', label:'× 欠損', bg:'#888',  fg:'#fff'},
+ {t:'o', label:'○ 健康', bg:'#e6ffe6',fg:'#333'},
+ {t:'C1',label:'C1',    bg:'#b8860b',fg:'#333'},
+ {t:'C2',label:'C2',    bg:'#cc7000',fg:'#333'},
+ {t:'C3',label:'C3',    bg:'#c84b00',fg:'#333'},
+ {t:'C4',label:'C4',    bg:'#9b1b00',fg:'#fff'},
+ {t:'P', label:'P 歯周',bg:'#c0392b',fg:'#fff'},
+ {t:'CR',label:'CR 白詰',bg:'#2471a3',fg:'#fff'},
+ {t:'Cr',label:'Cr 金冠',bg:'#777',  fg:'#fff'},
+ {t:'FM',label:'FM 全金',bg:'#666',  fg:'#fff'},
+ {t:'MB',label:'MB 白冠',bg:'#1a6b3c',fg:'#fff'},
+ {t:'HR',label:'HR',    bg:'#1a5276',fg:'#fff'},
+ {t:'In',label:'In',    bg:'#4a148c',fg:'#fff'},
+ {t:'AF',label:'AF',    bg:'#00695c',fg:'#fff'},
+ {t:'HJK',label:'HJK',  bg:'#37474f',fg:'#fff'},
+ {t:'WSD',label:'WSD',  bg:'#e65100',fg:'#fff'},
+ {t:'RF',label:'根面板', bg:'#880e4f',fg:'#fff'}
+];
+// SVG描画用の色マップ（清書ツールと整合）
+const SVG_FILL={'':'#fff','x':'#c8c8c8','o':'#f0fff0','C1':'#fff9c4','C2':'#ffe082','C3':'#ffab76','C4':'#d32f2f',
+ 'P':'#ffcdd2','CR':'#e3f2fd','Cr':'#eeeeee','FM':'#bdbdbd','MB':'#c8e6c9','HR':'#e1f5fe','In':'#e1bee7',
+ 'AF':'#b2dfdb','HJK':'#cfd8dc','WSD':'#ffe0b2','RF':'#fce4ec'};
+const SVG_TXT={'':'#aaa','x':'#555','o':'#006600','C1':'#5d4037','C2':'#3e2723','C3':'#000','C4':'#fff',
+ 'P':'#b71c1c','CR':'#1565c0','Cr':'#333','FM':'#333','MB':'#1b5e20','HR':'#0d47a1','In':'#4a148c',
+ 'AF':'#00695c','HJK':'#37474f','WSD':'#e65100','RF':'#880e4f'};
+// チェック項目（清書ツールのT_KEYS / C_KEYSと同一）
+const T_KEYS=[
+ {k:'calculus',l:'歯石除去'},{k:'cavity',l:'虫歯治療'},{k:'denture_new',l:'入れ歯新調'},
+ {k:'denture_fix',l:'入れ歯修理'},{k:'ok',l:'問題なし'},{k:'spring',l:'バネ破折'},
+ {k:'extract',l:'抜歯'},{k:'refuse',l:'拒否'}
+];
+const C_KEYS=[
+ {k:'plaque',l:'プラーク多'},{k:'perio',l:'歯周病進行'},{k:'aspiration',l:'誤嚥リスク'},
+ {k:'regular',l:'定期ケア'},{k:'dry_mouth',l:'口腔内乾燥'},{k:'kahin',l:'痂皮'}
+];
+
+function sym(s){return s==='x'?'×':s==='o'?'○':s;}
+
+/* ===== 状態 ===== */
+let pid=0;
+const photoStore={};   // cardId -> [{name, dataUrl}]
+let curCardId=null;     // 歯式編集中のカード
+let curToothSt={};      // 編集中の歯式
+let curSym='x';         // 選択中の記号
+
+/* ===== 患者カード追加 ===== */
+function addPatient(data){
+  data=data||{};
+  const id='c'+(pid++);
+  const host=document.getElementById('patients');
+  const div=document.createElement('div');
+  div.className='pcard';
+  div.id=id;
+  div.dataset.tooth=JSON.stringify(data.toothSt||{});
+  const tkeys=data.tkeys||[], ckeys=data.ckeys||[];
+
+  div.innerHTML=`
+    <div class="pcard-hd">
+      <span class="pcard-no">${document.querySelectorAll('.pcard').length+1}</span>
+      <input class="pname" type="text" placeholder="患者氏名" value="${esc(data.name||'')}">
+      <input class="proom" type="text" placeholder="居室" value="${esc(data.room||'')}">
+      <button class="pcard-del" onclick="delPatient('${id}')" title="削除">🗑</button>
+    </div>
+    <div class="pcard-bd">
+      <div class="sec">
+        <div class="sec-t">🦷 歯式</div>
+        <button class="tooth-open" id="${id}-toothbtn" onclick="openTooth('${id}')">＋ 歯式を入力</button>
+      </div>
+      <div class="sec">
+        <div class="sec-t">🔧 治療が必要</div>
+        <div class="chips" id="${id}-tk">
+          ${T_KEYS.map(k=>`<span class="chip ${tkeys.includes(k.k)?'on':''}" data-k="${k.k}" onclick="togChip(this)">${k.l}</span>`).join('')}
+        </div>
+      </div>
+      <div class="sec">
+        <div class="sec-t">🪥 口腔ケア</div>
+        <div class="chips" id="${id}-ck">
+          ${C_KEYS.map(k=>`<span class="chip care ${ckeys.includes(k.k)?'on':''}" data-k="${k.k}" onclick="togChip(this)">${k.l}</span>`).join('')}
+        </div>
+      </div>
+      <div class="sec">
+        <div class="sec-t">📝 メモ（治療について）</div>
+        <textarea class="memo advT" placeholder="気づいた点をメモ程度に">${esc(data.advT||'')}</textarea>
+      </div>
+      <div class="sec">
+        <div class="sec-t">📝 メモ（ケアについて）</div>
+        <textarea class="memo advC" placeholder="気づいた点をメモ程度に">${esc(data.advC||'')}</textarea>
+      </div>
+      <div class="sec">
+        <div class="sec-t">📷 写真（任意・別送り）</div>
+        <input type="file" accept="image/*" capture="environment" style="display:none" id="${id}-file" onchange="onPhoto('${id}',this)">
+        <button class="photo-add" onclick="document.getElementById('${id}-file').click()">📷 写真を撮る／選ぶ</button>
+        <div class="photo-thumbs" id="${id}-thumbs"></div>
+        <div class="photo-hint">撮った写真は「日付_氏名_番号.jpg」で保存できます。LINEは「ファイル」で送ると名前が保てます。</div>
+      </div>
+    </div>`;
+  host.appendChild(div);
+  refreshToothBtn(id);
+  renumber();
+  scheduleSave();
+}
+
+function delPatient(id){
+  if(!confirm('この患者を削除しますか？'))return;
+  const el=document.getElementById(id);
+  if(el)el.remove();
+  delete photoStore[id];
+  renumber();
+  scheduleSave();
+}
+
+function renumber(){
+  document.querySelectorAll('.pcard').forEach((c,i)=>{
+    c.querySelector('.pcard-no').textContent=i+1;
+  });
+}
+
+function togChip(el){el.classList.toggle('on');scheduleSave();}
+
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
+/* ===== 歯式モーダル ===== */
+function buildSymBar(){
+  const bar=document.getElementById('symBar');
+  bar.innerHTML=TOOLS_C.map(t=>
+    `<button class="sym-btn ${t.t===curSym?'sel':''}" style="background:${t.bg};color:${t.fg};"
+       data-t="${t.t}" onclick="pickSym('${t.t}',this)">${t.label}</button>`).join('');
+}
+function pickSym(t,btn){
+  curSym=t;
+  document.querySelectorAll('.sym-btn').forEach(b=>b.classList.remove('sel'));
+  if(btn)btn.classList.add('sel');
+}
+function openTooth(cardId){
+  curCardId=cardId;
+  const card=document.getElementById(cardId);
+  curToothSt=JSON.parse(card.dataset.tooth||'{}');
+  const nm=card.querySelector('.pname').value.trim();
+  document.getElementById('toothTitle').textContent=nm?(nm+' の歯式'):'歯式入力';
+  curSym='x';
+  buildSymBar();
+  renderChart();
+  document.getElementById('toothModal').classList.add('open');
+}
+function closeTooth(){document.getElementById('toothModal').classList.remove('open');}
+function saveTooth(){
+  const card=document.getElementById(curCardId);
+  card.dataset.tooth=JSON.stringify(curToothSt);
+  refreshToothBtn(curCardId);
+  closeTooth();
+  scheduleSave();
+}
+function fillAll(v){
+  curToothSt={};
+  if(v)TD.forEach(t=>curToothSt[t.id]=v);
+  renderChart();
+}
+function tapTooth(id){
+  if(curSym===''){delete curToothSt[id];}
+  else if(curToothSt[id]===curSym){delete curToothSt[id];}
+  else{curToothSt[id]=curSym;}
+  renderChart();
+}
+function refreshToothBtn(cardId){
+  const card=document.getElementById(cardId);
+  const st=JSON.parse(card.dataset.tooth||'{}');
+  const n=Object.keys(st).length;
+  const btn=document.getElementById(cardId+'-toothbtn');
+  if(n){btn.textContent='🦷 歯式 ('+n+'本) 入力済み';btn.classList.add('has');}
+  else{btn.textContent='＋ 歯式を入力';btn.classList.remove('has');}
+}
+
+/* 歯式チャート（タップ可能なグリッド表示） */
+function renderChart(){
+  const host=document.getElementById('chartHost');
+  function cell(t){
+    const s=curToothSt[t.id]||'';
+    const fill=s?SVG_FILL[s]:'#fff';
+    const fg=s?SVG_TXT[s]:'#bbb';
+    const bd=s?'#444':'#ccc';
+    return `<div onclick="tapTooth('${t.id}')" style="aspect-ratio:1;border:1.5px solid ${bd};border-radius:7px;
+      background:${fill};color:${fg};display:flex;flex-direction:column;align-items:center;justify-content:center;
+      cursor:pointer;font-weight:700;font-size:${s&&s.length>2?'10px':'13px'};line-height:1;">
+      <span>${s?sym(s):''}</span>
+      <span style="font-size:9px;color:#999;font-weight:400;margin-top:2px;">${t.n}</span></div>`;
+  }
+  const upR=TD.slice(0,8), upL=TD.slice(8,16), loR=TD.slice(16,24), loL=TD.slice(24,32);
+  const grid=arr=>`<div style="display:grid;grid-template-columns:repeat(8,1fr);gap:4px;">${arr.map(cell).join('')}</div>`;
+  host.innerHTML=`
+    <div style="font-size:11px;color:#888;margin:6px 0 3px;display:flex;justify-content:space-between;">
+      <span>上顎（右 → 左）</span></div>
+    ${grid(upR.concat(upL))}
+    <div style="height:10px;"></div>
+    <div style="font-size:11px;color:#888;margin:6px 0 3px;">下顎（右 → 左）</div>
+    ${grid(loR.concat(loL))}`;
+}
+
+/* ===== 写真 ===== */
+function pad2(n){return n<10?'0'+n:''+n;}
+function todayStr(){const d=new Date();return ''+d.getFullYear()+pad2(d.getMonth()+1)+pad2(d.getDate());}
+function safeName(s){return (s||'無名').replace(/[\\/:*?"<>|\s]/g,'_');}
+function onPhoto(cardId,input){
+  const f=input.files&&input.files[0];
+  if(!f)return;
+  const r=new FileReader();
+  r.onload=()=>{
+    if(!photoStore[cardId])photoStore[cardId]=[];
+    photoStore[cardId].push({dataUrl:r.result});
+    renderThumbs(cardId);
+  };
+  r.readAsDataURL(f);
+  input.value='';
+}
+function renderThumbs(cardId){
+  const host=document.getElementById(cardId+'-thumbs');
+  const arr=photoStore[cardId]||[];
+  const card=document.getElementById(cardId);
+  const nm=safeName(card.querySelector('.pname').value.trim());
+  host.innerHTML=arr.map((p,i)=>{
+    const fname=todayStr()+'_'+nm+'_'+(i+1)+'.jpg';
+    return `<div class="photo-thumb">
+      <img src="${p.dataUrl}">
+      <button class="rm" onclick="rmPhoto('${cardId}',${i})">×</button>
+      <button class="dl" onclick="dlPhoto('${cardId}',${i})">保存</button>
+    </div>`;
+  }).join('');
+}
+function rmPhoto(cardId,i){
+  photoStore[cardId].splice(i,1);
+  renderThumbs(cardId);
+}
+function dlPhoto(cardId,i){
+  const card=document.getElementById(cardId);
+  const nm=safeName(card.querySelector('.pname').value.trim());
+  const fname=todayStr()+'_'+nm+'_'+(i+1)+'.jpg';
+  const a=document.createElement('a');
+  a.href=photoStore[cardId][i].dataUrl;
+  a.download=fname;
+  document.body.appendChild(a);a.click();a.remove();
+}
+
+/* ===== データ収集（清書v2のrestoreStateが読める形式） ===== */
+function collectState(){
+  const rows=[];
+  document.querySelectorAll('.pcard').forEach(card=>{
+    const id=card.id;
+    rows.push({
+      name:card.querySelector('.pname').value.trim(),
+      room:card.querySelector('.proom').value.trim(),
+      tkeys:[...card.querySelectorAll('#'+id+'-tk .chip.on')].map(c=>c.dataset.k),
+      ckeys:[...card.querySelectorAll('#'+id+'-ck .chip.on')].map(c=>c.dataset.k),
+      advT:card.querySelector('.advT').value.trim(),
+      advC:card.querySelector('.advC').value.trim(),
+      toothSt:JSON.parse(card.dataset.tooth||'{}'),
+      facility:null, sub2:'', annos:[], photos:null, prevChecked:true
+    });
+  });
+  return {v:1, ts:Date.now(), _draft:true,
+    shared:{
+      fac:gv('s-fac'), date:gv('s-date'), doc:gv('s-doc'),
+      cli:gv('s-cli'), tel:gv('s-tel'), rtype:'shashiki', legend:true
+    },
+    rows:rows};
+}
+function gv(id){return (document.getElementById(id).value||'').trim();}
+
+/* ===== データをファイルに保存（個人情報はファイル内のみ・URLに乗せない） ===== */
+function saveDataFile(){
+  const st=collectState();
+  if(st.rows.length===0){alert('患者を1人以上追加してください。');return;}
+  // ファイル名：施設名_日付.json（無ければ「健診下書き_日付」）
+  const fac=safeName(gv('s-fac'))||'健診下書き';
+  const fname=fac+'_'+todayStr()+'.json';
+  const json=JSON.stringify(st,null,0);
+  const blob=new Blob([json],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;a.download=fname;
+  document.body.appendChild(a);a.click();a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),2000);
+  document.getElementById('savedFileName').textContent=fname;
+  document.getElementById('saveModal').classList.add('open');
+}
+function closeSaveModal(){document.getElementById('saveModal').classList.remove('open');}
+
+/* ===== 自動保存（localStorage） ===== */
+const KEY='kensin_draft_v1';
+let saveTimer=null;
+function scheduleSave(){clearTimeout(saveTimer);saveTimer=setTimeout(doSave,800);}
+function doSave(){
+  try{
+    const st=collectState();
+    // 写真は容量大のためlocalStorageには保存しない（別送り運用のため）
+    localStorage.setItem(KEY,JSON.stringify(st));
+    setSt('💾 保存済み');
+  }catch(e){setSt('⚠ 保存容量超過');}
+}
+function setSt(t){document.getElementById('saveSt').textContent=t;}
+function loadSaved(){
+  try{
+    const raw=localStorage.getItem(KEY);
+    if(!raw)return false;
+    const st=JSON.parse(raw);
+    const sh=st.shared||{};
+    sv('s-fac',sh.fac);sv('s-date',sh.date);sv('s-doc',sh.doc);sv('s-cli',sh.cli);sv('s-tel',sh.tel);
+    (st.rows||[]).forEach(r=>addPatient(r));
+    return (st.rows||[]).length>0;
+  }catch(e){return false;}
+}
+function sv(id,v){if(v!=null)document.getElementById(id).value=v;}
+
+document.addEventListener('input',e=>{
+  if(e.target.classList.contains('pname')){
+    const card=e.target.closest('.pcard');
+    if(card)renderThumbs(card.id);
+  }
+  scheduleSave();
+},true);
+
+/* ===== 初期化 ===== */
+(function(){
+  const had=loadSaved();
+  if(!had)addPatient();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,2914 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>健診結果書 施設用 v2</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Meiryo','Yu Gothic',sans-serif;font-size:12px;background:#f0f2f5;}
+/* ===== SCREEN ===== */
+.wrap{max-width:1400px;margin:0 auto;padding:16px;}
+.hdr{background:#1a3f6f;color:white;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;border-radius:8px 8px 0 0;}
+.hdr-title{font-size:16px;font-weight:bold;}
+.hdr-btns{display:flex;gap:8px;}
+.hbt{padding:8px 16px;border:none;border-radius:5px;cursor:pointer;font-size:12px;font-weight:bold;font-family:inherit;}
+.hbt-gen{background:#e8c547;color:#333;}
+.hbt-print{background:#27ae60;color:white;}
+.hbt-clear{background:rgba(255,255,255,.2);color:white;border:1px solid rgba(255,255,255,.4);}
+/* shared settings */
+.shared{background:white;padding:14px 20px;border-bottom:2px solid #e0e6ef;display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end;}
+.sf{display:flex;flex-direction:column;gap:3px;}
+.sf label{font-size:10px;color:#666;font-weight:bold;text-transform:uppercase;letter-spacing:.5px;}
+.sf input,.sf select{border:1px solid #ccc;border-radius:4px;padding:6px 8px;font-size:12px;font-family:inherit;}
+.sf input:focus,.sf select:focus{outline:none;border-color:#1a3f6f;}
+.sf-lg input{width:180px;}
+.sf-sm input{width:100px;}
+.sf-today{padding:6px 10px;border:1px solid #ccc;border-radius:4px;background:#f8f9fa;cursor:pointer;font-size:11px;}
+/* toolbar */
+.toolbar{background:#f8f9fa;border-bottom:1px solid #ddd;padding:10px 20px;display:flex;gap:8px;align-items:center;}
+.tbtn{padding:6px 12px;border-radius:4px;cursor:pointer;font-size:11px;font-weight:bold;font-family:inherit;border:1px solid #ccc;background:white;transition:all .15s;}
+.tbtn:hover{background:#e8f0fe;border-color:#4285f4;}
+.tbtn-blue{background:#1a3f6f;color:white;border-color:#1a3f6f;}
+.tbtn-blue:hover{background:#2c5282;border-color:#2c5282;}
+.pcount{font-size:11px;color:#666;margin-left:auto;}
+/* table */
+.tbl-wrap{background:white;overflow-x:auto;}
+table{width:100%;border-collapse:collapse;font-size:11px;}
+thead tr{background:#1a3f6f;color:white;}
+thead th{padding:8px 6px;text-align:center;font-size:10px;font-weight:bold;white-space:nowrap;letter-spacing:.3px;border-right:1px solid rgba(255,255,255,.2);}
+thead th:last-child{border-right:none;}
+tbody tr{border-bottom:1px solid #eee;transition:background .1s;min-height:52px;}
+tbody tr:hover{background:#f8f9fa;}
+tbody tr:nth-child(even){background:#fafbff;}
+tbody tr:nth-child(even):hover{background:#f0f4ff;}
+tbody td{padding:6px 5px;vertical-align:top;border-right:1px solid #eee;}
+tbody td:last-child{border-right:none;}
+.rn{text-align:center;color:#999;font-size:10px;font-weight:bold;width:26px;}
+.pname-td{width:100px;}
+input.pname{width:90px;border:1px solid #ccc;border-radius:3px;padding:4px 6px;font-size:11px;}
+select.fi-s{border:1px solid #ccc;border-radius:3px;padding:3px 4px;font-size:10px;background:white;}
+input.num-s{width:40px;border:1px solid #ccc;border-radius:3px;padding:3px 5px;font-size:10px;text-align:center;}
+.ck-td{text-align:center;width:32px;}
+.ck-td input{cursor:pointer;}
+/* advice cell */
+.adv-cell{min-width:260px;}
+.adv-row{display:flex;flex-direction:column;gap:3px;}
+.adv-keys{display:flex;flex-wrap:wrap;gap:2px;}
+.ak{font-size:9px;padding:2px 5px;border-radius:3px;cursor:pointer;border:1px solid #ccc;background:#f8f9fa;transition:all .1s;white-space:nowrap;}
+.ak.on{background:#1a3f6f;color:white;border-color:#1a3f6f;}
+.ak:hover:not(.on){background:#e8f0fe;border-color:#4285f4;}
+.adv-custom{width:100%;border:1px solid #ccc;border-radius:3px;padding:4px 6px;font-size:10px;resize:vertical;min-height:72px;line-height:1.6;}
+.adv-deco{display:flex;gap:3px;align-items:center;margin:3px 0 1px;flex-wrap:wrap;}
+.adv-db{font-size:9px;padding:2px 7px;border:1px solid #bbb;border-radius:3px;background:#f8f9fa;cursor:pointer;font-family:inherit;line-height:1.3;}
+.adv-db:hover{background:#e8f0fe;border-color:#4285f4;}
+.adv-db-b{font-weight:bold;}
+.adv-db-r{color:#c0392b;font-weight:bold;}
+.adv-deco-hint{font-size:8.5px;color:#999;}
+/* nec cell */
+.nec-td{width:70px;text-align:center;}
+select.nec-s{width:64px;border:1px solid #ccc;border-radius:3px;padding:3px 4px;font-size:10px;background:white;}
+/* ops cell */
+.ops{display:flex;gap:3px;justify-content:center;}
+.op-btn{padding:3px 6px;border:1px solid #ccc;border-radius:3px;cursor:pointer;font-size:10px;font-family:inherit;background:white;transition:all .1s;}
+.op-btn:hover{background:#e8f0fe;}
+.op-del{border-color:#e74c3c;color:#e74c3c;}
+.op-del:hover{background:#ffeaea;}
+/* status bar */
+.statusbar{background:#f8f9fa;border-top:1px solid #ddd;padding:8px 20px;font-size:11px;color:#666;display:flex;gap:16px;align-items:center;}
+/* preview toggle */
+.prev-toggle{background:#1a3f6f;color:white;width:100%;padding:10px;border:none;cursor:pointer;font-size:13px;font-weight:bold;text-align:center;margin-top:16px;border-radius:4px;}
+.prev-wrap{display:none;background:#cfd5de;padding:24px;margin-top:0;}
+.prev-wrap.show{display:flex;flex-wrap:wrap;gap:16px;justify-content:center;}
+/* ===== PRINT FORM (same as single tool) ===== */
+.pf{width:210mm;max-width:100%;background:white;padding:12mm 14mm;font-family:'MS Mincho','Hiragino Mincho ProN','Yu Mincho',serif;font-size:9.5pt;line-height:1.45;box-shadow:0 2px 12px rgba(0,0,0,.15);}
+.pf-dt{text-align:right;font-size:9.5pt;margin-bottom:4mm;}
+.pf-ti{text-align:center;font-size:15pt;font-weight:bold;letter-spacing:.35em;padding-bottom:3mm;border-bottom:2.5px solid #000;margin-bottom:4mm;}
+.pf-pt{display:grid;grid-template-columns:1fr 1fr;font-size:10.5pt;margin-bottom:3mm;padding-bottom:2mm;border-bottom:1px solid #000;}
+.pf-bx{border:2px solid #000;margin-bottom:3mm;}
+.pf-bh{background:#1a1a1a;color:white;padding:2mm 4mm;font-size:9.5pt;font-weight:bold;letter-spacing:.2em;-webkit-print-color-adjust:exact;print-color-adjust:exact;color-adjust:exact;}
+.pf-bd{padding:3mm 4mm;}
+.pf-ci{display:flex;align-items:flex-start;gap:5px;margin-bottom:2mm;font-size:9pt;}
+.pf-cb{width:12px;height:12px;border:1.5px solid #000;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;font-size:9px;}
+.pf-nec{display:flex;align-items:center;gap:4mm;padding:2mm 4mm;border:2px solid #000;margin-bottom:2.5mm;font-size:10pt;font-weight:bold;}
+.pf-no{padding:1mm 3mm;border:1px solid #bbb;border-radius:12px;font-size:8.5pt;color:#bbb;text-decoration:line-through;white-space:nowrap;}
+.pf-no.s{border:2px solid #000;font-weight:bold;color:#000;text-decoration:none;}
+.pf-ab{border:2px solid #000;margin-bottom:3mm;}
+.pf-ah{background:#1a1a1a;color:white;text-align:center;padding:2mm;font-size:9.5pt;font-weight:bold;letter-spacing:.2em;-webkit-print-color-adjust:exact;print-color-adjust:exact;color-adjust:exact;}
+.pf-ar{display:grid;grid-template-columns:14mm 1fr;min-height:14mm;}
+.pf-ar+.pf-ar{border-top:1px solid #ccc;}
+.pf-al{background:#f0f0f0;border-right:1.5px solid #ccc;display:flex;align-items:center;justify-content:center;writing-mode:vertical-rl;font-size:9pt;font-weight:bold;text-align:center;letter-spacing:.2em;padding:3mm 1mm;}
+.pf-at{padding:3mm;font-size:12pt;line-height:1.85;white-space:pre-wrap;word-break:break-all;min-height:22mm;}
+.pf-ft{display:flex;justify-content:space-between;align-items:flex-end;margin-top:4mm;gap:8mm;font-size:11pt;}
+.pf-cl{text-align:right;font-size:10.5pt;}
+/* print media */
+/* ===== TOOTH CHART MODAL ===== */
+.tc-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:9999;align-items:center;justify-content:center;}
+.tc-modal.open{display:flex;}
+.tc-box{background:white;border-radius:10px;padding:16px;width:340px;box-shadow:0 8px 32px rgba(0,0,0,.3);}
+.tc-title{font-size:13px;font-weight:bold;color:#1a3f6f;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;}
+.tc-close{background:none;border:none;font-size:18px;cursor:pointer;color:#666;line-height:1;}
+.tc-svg-wrap{width:100%;aspect-ratio:270/330;max-height:52vh;border:1px solid #ddd;border-radius:6px;overflow:hidden;background:white;margin-bottom:8px;}
+#tc-svg{width:100%;height:100%;display:block;}
+.tc-tools{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:10px;}
+.tc-tool{padding:3px 7px;border-radius:4px;border:2px solid transparent;cursor:pointer;font-size:10px;font-weight:bold;transition:all .1s;}
+.tc-tool.active{border-color:#1a3f6f;box-shadow:0 0 0 2px rgba(26,63,111,.3);}
+.tc-acts{display:flex;gap:6px;justify-content:flex-end;}
+.tc-btn{padding:6px 14px;border:none;border-radius:5px;cursor:pointer;font-size:11px;font-weight:bold;}
+.tc-btn-save{background:#1a3f6f;color:white;}
+.tc-btn-clear{background:#e74c3c;color:white;}
+.tc-btn-cancel{background:#ccc;color:#333;}
+/* 歯式ボタン */
+.tooth-btn{padding:2px 6px;border:1px solid #1a3f6f;border-radius:3px;cursor:pointer;font-size:9px;color:#1a3f6f;background:white;}
+.tooth-btn.has-data{background:#1a3f6f;color:white;}
+/* 印刷フォーム内歯式 */
+.pf-chart{margin-bottom:3mm;border:1px solid #ccc;border-radius:4px;overflow:hidden;}
+.pf-chart-h{background:#333;color:white;font-size:8pt;font-weight:bold;padding:1mm 3mm;letter-spacing:.1em;-webkit-print-color-adjust:exact;print-color-adjust:exact;color-adjust:exact;}
+
+
+
+/* ── Excelインポート ── */
+.xl-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9999;align-items:center;justify-content:center;}
+.xl-modal.open{display:flex;}
+.xl-box{background:white;border-radius:10px;padding:20px;width:480px;max-width:95vw;box-shadow:0 8px 32px rgba(0,0,0,.3);}
+.xl-title{font-size:14px;font-weight:bold;color:#1a3f6f;margin-bottom:14px;display:flex;justify-content:space-between;}
+.xl-close{background:none;border:none;font-size:20px;cursor:pointer;color:#666;}
+.xl-drop{border:2px dashed #aac;border-radius:8px;padding:24px;text-align:center;cursor:pointer;position:relative;transition:.2s;background:#f8fbff;}
+.xl-drop:hover,.xl-drop.drag{border-color:#1a3f6f;background:#eef4ff;}
+.xl-drop input{position:absolute;inset:0;opacity:0;cursor:pointer;}
+.xl-preview{margin-top:12px;max-height:200px;overflow-y:auto;border:1px solid #ddd;border-radius:6px;display:none;}
+.xl-preview table{width:100%;border-collapse:collapse;font-size:10px;}
+.xl-preview th{background:#1a3f6f;color:white;padding:4px 6px;text-align:left;}
+.xl-preview td{padding:3px 6px;border-bottom:1px solid #eee;}
+.xl-preview tr:nth-child(even) td{background:#f8f9fa;}
+.xl-acts{display:flex;gap:8px;margin-top:14px;justify-content:flex-end;}
+.xl-btn{padding:8px 16px;border:none;border-radius:5px;cursor:pointer;font-size:12px;font-weight:bold;}
+.xl-btn-import{background:#1a3f6f;color:white;}
+.xl-btn-cancel{background:#ddd;color:#333;}
+.xl-status{margin-top:8px;font-size:11px;color:#555;}
+.xl-count{background:#e8f5e9;border:1px solid #a5d6a7;border-radius:4px;padding:4px 10px;font-size:11px;color:#2e7d32;display:none;}
+
+
+/* ── 拡張記録モーダル ── */
+.tc-scroll{flex:1;overflow-y:auto;min-height:0;padding-right:2px;}
+.tc-box{width:420px;max-width:96vw;max-height:92vh;display:flex;flex-direction:column;}
+.tc-tabs{display:flex;gap:4px;margin-bottom:10px;}
+.tc-tab{flex:1;padding:5px;border:2px solid #ccc;border-radius:5px;cursor:pointer;font-size:11px;font-weight:bold;background:#f5f5f5;color:#555;transition:.15s;}
+.tc-tab.active{background:#1a3f6f;color:white;border-color:#1a3f6f;}
+/* 写真タブ */
+.mp-thumbs{display:flex;gap:4px;margin-bottom:8px;}
+.mp-thumb{flex:1;aspect-ratio:1;border:2px solid #ddd;border-radius:4px;cursor:pointer;overflow:hidden;display:flex;align-items:center;justify-content:center;background:#f8f8f8;font-size:9px;color:#aaa;position:relative;}
+.mp-thumb.active{border-color:#1a3f6f;box-shadow:0 0 0 2px rgba(26,63,111,.3);}
+.mp-thumb img{width:100%;height:100%;object-fit:cover;}
+.mp-thumb svg{width:100%;height:100%;}
+.mp-upload{font-size:10px;color:#888;margin-bottom:4px;}
+.mp-svg-wrap{border:1px solid #ddd;border-radius:5px;overflow:hidden;margin-bottom:8px;background:#f0f0f0;position:relative;}
+.mp-svg-wrap svg{width:100%;display:block;}
+.mp-svg-wrap.anno{outline:2px solid #e74c3c;}
+.mp-cap{width:100%;border:1px solid #ccc;border-radius:4px;padding:4px 6px;font-size:10px;resize:vertical;min-height:32px;margin-bottom:6px;}
+.mp-tool-row{display:flex;flex-wrap:wrap;gap:3px;margin-bottom:5px;}
+.mp-tool{padding:2px 7px;border-radius:4px;cursor:pointer;font-size:10px;border:1.5px solid transparent;background:#f5f5f5;transition:.1s;}
+.mp-tool:hover,.mp-tool.active{background:#1a3f6f;color:white;}
+.mp-col-row{display:flex;gap:4px;align-items:center;margin-bottom:6px;}
+.mp-dot{width:16px;height:16px;border-radius:50%;cursor:pointer;border:2px solid transparent;flex-shrink:0;}
+.mp-dot.active{border-color:#333;transform:scale(1.25);}
+.mp-anno-on{background:#e74c3c!important;color:white!important;border-color:#e74c3c!important;}
+/* pf-chart for print */
+.pf-chart{margin-bottom:3mm;border:1px solid #ccc;border-radius:4px;overflow:hidden;}
+.pf-chart-h{background:#333;color:white;font-size:8pt;font-weight:bold;padding:1mm 3mm;letter-spacing:.1em;-webkit-print-color-adjust:exact;print-color-adjust:exact;color-adjust:exact;}
+.pf-ps{display:grid;grid-template-columns:1fr 1fr;gap:3mm;}
+.pf-p{border:1px solid #ccc;}
+.pf-p img,.pf-p svg{width:100%;max-height:90mm;object-fit:contain;display:block;background:#f0f0f0;}
+.pf-pc{padding:2mm 3mm;font-size:8pt;background:#f8f8f8;border-top:1px solid #ccc;min-height:10mm;line-height:1.6;white-space:pre-wrap;}
+.pf-pe{height:70mm;background:#f8f8f8;display:flex;align-items:center;justify-content:center;color:#bbb;font-size:9pt;}
+
+
+
+/* ── 1名版と同じ印刷レイアウト ── */
+.pf-2c{display:grid;grid-template-columns:52% 48%;gap:3mm;}
+.pf-ca{border-right:1px solid #ccc;padding-right:3mm;}
+.pf-al{background:#f0f0f0;border-right:1.5px solid #ccc;display:flex;align-items:center;
+  justify-content:center;writing-mode:vertical-rl;font-size:9pt;font-weight:bold;
+  text-align:center;letter-spacing:.2em;padding:3mm 1mm;width:14mm;}
+.pf-at{padding:3mm;font-size:12pt;line-height:1.85;white-space:pre-wrap;word-break:break-all;min-height:22mm;}
+.pf-ar{display:grid;grid-template-columns:14mm 1fr;min-height:20mm;}
+.pf-ar+.pf-ar{border-top:1px solid #ccc;}
+
+
+.pf-ct{width:100%;border-collapse:collapse;font-size:9pt;}
+.pf-ct tr td{padding:1.5mm 2mm;vertical-align:top;}
+.pf-ct tr+tr td{border-top:1px solid #eee;}
+.pf-et{width:100%;border-collapse:collapse;border:1.5px solid #000;font-size:8.5pt;margin-bottom:3mm;table-layout:fixed;}
+.pf-et th,.pf-et td{border:1px solid #000;padding:1.5mm 1mm;text-align:center;line-height:1.2;word-break:keep-all;}
+.pf-et th{background:#1a1a1a;color:white;-webkit-print-color-adjust:exact;print-color-adjust:exact;color-adjust:exact;}
+.pf-et th.tl{font-size:8pt;}
+.pf-et th.lb{font-size:7.5pt;white-space:nowrap;}
+.pf-et td.ev{font-size:10pt;font-weight:600;}
+.pf-et td.s{font-weight:bold;border:2px solid #000;-webkit-print-color-adjust:exact;print-color-adjust:exact;color-adjust:exact;}
+.pf-et td.s-not{background:#a5d6a7;color:#1b5e20;}
+.pf-et td.s-need{background:#fff176;color:#5d4037;}
+.pf-et td.s-urgent{background:#ef5350;color:#fff;}
+.pf-no{padding:1mm 3mm;border:1px solid #bbb;border-radius:12px;font-size:8.5pt;color:#bbb;text-decoration:line-through;white-space:nowrap;}
+.pf-no.s{border:2px solid #000;font-weight:bold;color:#000;text-decoration:none;}
+.pf-pb{background:#1a1a1a;color:white;text-align:center;padding:2mm;font-size:9pt;margin-bottom:2mm;-webkit-print-color-adjust:exact;print-color-adjust:exact;color-adjust:exact;}
+.pf-note{text-align:center;font-size:10pt;font-weight:bold;color:#0d47a1;border:1.5px solid #0d47a1;padding:1.5mm;margin:2mm 0;background:#e3f2fd;-webkit-print-color-adjust:exact;print-color-adjust:exact;color-adjust:exact;}
+.fac-bd{padding:2.5mm 4mm;font-size:10pt;line-height:1.7;}
+.pf-shashiki{width:72mm;max-width:72mm;margin:0 auto;}
+.pf-shashiki svg{width:100%;height:auto;display:block;}
+/* 歯式タイプ：2カラムレイアウト */
+.fac-2col{display:flex;gap:3mm;align-items:flex-start;}
+.fac-2col-l{flex:0 0 74mm;display:flex;flex-direction:column;align-items:center;}
+.fac-2col-r{flex:1;min-width:0;font-size:9pt;line-height:1.5;}
+.fac-sub-h{font-size:10pt;font-weight:bold;color:#fff;background:#1a3f6f;padding:1.5mm 3mm;border-left:5px solid #0d2847;margin:1.5mm 0 1mm;-webkit-print-color-adjust:exact;print-color-adjust:exact;color-adjust:exact;}
+.fac-sub-bd{padding:0.5mm 1mm;background:#fafcff;border:1px solid #d0dde8;border-radius:2px;-webkit-print-color-adjust:exact;print-color-adjust:exact;color-adjust:exact;}
+.fac-2col-r .fac-li{padding:0.5mm 0;border-bottom:1px dashed #eee;font-size:9pt;line-height:1.45;}
+.fac-2col-r .fac-li:last-child{border-bottom:none;}
+.fac-2col-r .fac-no{display:inline-block;width:4mm;font-weight:bold;color:#1a3f6f;}
+/* 凡例 */
+.pf-legend{margin-top:2mm;width:100%;}
+.pf-legend-h{font-size:8pt;font-weight:bold;color:#555;text-align:center;background:#f0f0f0;padding:0.8mm;border:1px solid #ccc;}
+.pf-legend-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 3mm;font-size:7pt;line-height:1.45;padding:1mm 2mm;border:1px solid #ccc;border-top:none;}
+.pf-legend-grid span{white-space:nowrap;}
+.pf-legend-grid b{color:#1a3f6f;font-weight:bold;}
+.fac-li{padding:1mm 0;border-bottom:1px dashed #eee;}
+.fac-li:last-child{border-bottom:none;}
+.fac-no{display:inline-block;width:5mm;font-weight:bold;color:#1a3f6f;}
+@media print{
+  .fac-bd{padding:2mm 3mm;font-size:9.5pt;line-height:1.6;}
+  .fac-li{padding:0.7mm 0;}
+  .pf-shashiki{width:68mm;max-width:68mm;}
+  .fac-2col{gap:2mm;}
+  .fac-2col-l{flex:0 0 70mm;}
+  .fac-2col-r{font-size:8.5pt;line-height:1.4;}
+  .fac-2col-r .fac-li{padding:0.3mm 0;font-size:8.5pt;line-height:1.35;}
+  .fac-sub-h{font-size:9pt;padding:1mm 2mm;margin:1mm 0 0.5mm;}
+  .pf-legend-h{font-size:7.5pt;padding:0.5mm;}
+  .pf-legend-grid{font-size:6.5pt;line-height:1.4;padding:0.7mm 1.5mm;}
+}
+.pf-ps{display:grid;grid-template-columns:1fr 1fr;gap:3mm;}
+
+@media print{
+  .no-print,.wrap>.hdr,.shared,.toolbar,.tbl-wrap,.statusbar,.prev-toggle{display:none!important;}
+  .prev-wrap{display:flex!important;background:white;padding:0;flex-direction:column;gap:0;}
+  @page{size:A4 portrait;margin:10mm 12mm;}
+  body{counter-reset:page;}
+  .pf{
+    box-shadow:none;width:100%;
+    min-height:267mm;
+    page-break-after:always;break-after:page;
+    font-size:9pt;padding:5mm 7mm;line-height:1.4;
+    display:flex;flex-direction:column;
+  }
+  .pf:last-child{page-break-after:avoid;}
+  .pf-dt{margin-bottom:2mm;font-size:9pt;}
+  .pf-ti{font-size:13pt;padding-bottom:2mm;margin-bottom:3mm;}
+  .pf-pt{margin-bottom:2.5mm;padding-bottom:1.5mm;font-size:9.5pt;}
+  .pf-bx{margin-bottom:2.5mm;}
+  .pf-bh{padding:1.5mm 3.5mm;font-size:9pt;}
+  .pf-bd{padding:2.5mm 3.5mm;}
+  .pf-2c{gap:2.5mm;}
+  .pf-ca svg{max-height:100mm !important;width:auto !important;display:block;}
+  .pf-ca{padding-right:2mm;}
+  .pf-ci{margin-bottom:1.2mm;font-size:9pt;}
+  .pf-cb{width:11px;height:11px;}
+  .pf-nec{padding:1.5mm 3.5mm;margin-bottom:1.5mm;font-size:9.5pt;}
+  .pf-no{padding:1mm 3mm;font-size:9pt;}
+  .pf-ab{margin-bottom:0;flex:1;display:flex;flex-direction:column;}
+  .pf-ah{padding:1.5mm 2.5mm;font-size:9pt;}
+  .pf-ar{display:flex;flex-direction:column;flex:1;min-height:0;}
+  .pf-ar+.pf-ar{border-top:1px solid #ccc;}
+  .pf-al{writing-mode:horizontal-tb;width:auto;font-size:8pt;padding:1mm 2mm;
+         border-right:none;border-bottom:1px solid #ccc;letter-spacing:0;flex-shrink:0;}
+  .pf-at{padding:2.5mm;font-size:10pt !important;min-height:14mm;line-height:1.6;flex:1;}
+  .pf-ft{margin-top:auto;padding-top:3mm;font-size:10.5pt;}
+  .pf-ct tr td{padding:1.5mm 2mm;}
+  .pf-et th,.pf-et td{padding:1.2mm 0.8mm;}
+  .pf-et th.tl{font-size:8pt;}
+  .pf-et th.lb{font-size:7.5pt;}
+  .pf-et td.ev{font-size:10pt;}
+  .pf-pb{padding:1.5mm;font-size:9pt;margin-bottom:1.5mm;}
+  .pf-p img,.pf-p svg{max-height:85mm;}
+  .pf-pc{min-height:4mm;padding:1mm 2.5mm;font-size:8.5pt;}
+  /* 歯式タイプ：下部の空白をアドバイス欄で埋めてバランスを取る */
+  .pf-shaform .pf-ft{margin-top:3mm;}
+  .pf-shaform .pf-adv-grow{flex:1;display:flex;flex-direction:column;}
+  .pf-shaform .pf-adv-grow .pf-bd{flex:1;}
+}
+
+/* 写真② 写真タイプを1ページに収めるための印刷圧縮 */
+@media print{
+  .pf-photo .pf-bx{margin-bottom:1.2mm;}
+  .pf-photo .pf-bh{padding:0.7mm 3mm;font-size:8.5pt;}
+  .pf-photo .pf-bd{padding:1.1mm 3mm!important;}
+  .pf-photo .fac-bd{font-size:8.7pt;line-height:1.3;}
+  .pf-photo .fac-li{padding:0.1mm 0;}
+  .pf-photo .pf-ci{margin-bottom:0.8mm;}
+  .pf-photo .pf-et th,.pf-photo .pf-et td{padding:0.6mm 0.6mm;}
+  .pf-photo .pf-note{padding:0.7mm;margin:0.8mm 0;font-size:8.5pt;}
+  .pf-photo .pf-pb{padding:0.7mm;font-size:8.5pt;margin-bottom:0.7mm;}
+  .pf-photo .pf-pc{min-height:2.5mm;padding:0.4mm 2mm;font-size:7.5pt;line-height:1.28;}
+  .pf-photo .pf-dt{margin-bottom:0.7mm;font-size:8.5pt;}
+  .pf-photo .pf-ti{margin-bottom:1.6mm;padding-bottom:1.1mm;font-size:12pt;}
+  .pf-photo .pf-pt{margin-bottom:1.1mm;padding-bottom:0.7mm;font-size:9pt;}
+}
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+</head>
+<body>
+<div class="wrap no-print">
+<div class="hdr">
+  <div class="hdr-title">📋 健診結果書 施設用 v2</div>
+  <div class="hdr-btns">
+    <button class="hbt hbt-gen" onclick="generateAll()">📄 一括プレビュー生成</button>
+    <button class="hbt hbt-print" onclick="window.print()">🖨️ 全員分を印刷</button>
+    <button class="hbt hbt-clear" onclick="clearAll()">🗑 クリア</button>
+    <button class="hbt" style="background:rgba(39,174,96,.8);color:white;" onclick="exportCSVAll()">📊 CSV書き出し</button>
+  </div>
+</div>
+
+<!-- 共通設定 -->
+<div style="background:#fff3cd;border:1px solid #ffc107;border-radius:4px;padding:6px 12px;margin-bottom:6px;font-size:11px;color:#856404;" class="no-print">
+  🖨️ 印刷時は「<strong>その他の設定</strong>」→「<strong>ヘッダーとフッター</strong>」を<strong>OFF</strong>にしてください
+</div>
+<div class="shared">
+  <div class="sf sf-lg"><label>施設名</label><input id="s-fac" type="text" placeholder="例：小沼サークルホーム"></div>
+  <div class="sf"><label>日付</label>
+    <div style="display:flex;gap:4px;align-items:center;">
+      <input id="s-date" type="text" placeholder="例：令和8年3月23日" style="width:140px;">
+      <button class="sf-today" onclick="setToday()">今日</button>
+    </div></div>
+  <div class="sf sf-lg"><label>医師名</label><input id="s-doc" type="text" placeholder="例：石橋"></div>
+  <div class="sf" style="min-width:200px;"><label>医院名</label><input id="s-cli" type="text" placeholder="例：歯科タケダクリニック坂戸診療室" style="width:220px;"></div>
+  <div class="sf"><label>TEL</label><input id="s-tel" type="text" placeholder="050-5578-0628" style="width:140px;"></div>
+  <div class="sf" style="display:none;"><label>デフォルト診療</label>
+    <select id="s-tnec" style="border:1px solid #ccc;border-radius:4px;padding:6px 8px;font-size:12px;">
+      <option value="有り">有り</option>
+      <option value="緊急に有り">緊急に有り</option>
+      <option value="無し">無し</option>
+    </select></div>
+  <div class="sf"><label>記録タイプ</label>
+    <select id="s-rtype" style="border:1px solid #ccc;border-radius:4px;padding:6px 8px;font-size:12px;">
+      <option value="shashiki">歯式タイプ</option>
+      <option value="photo">写真タイプ</option>
+    </select></div>
+  <div class="sf"><label>歯式記号の凡例</label>
+    <label style="font-size:12px;display:flex;align-items:center;gap:5px;padding:6px 2px;cursor:pointer;white-space:nowrap;">
+      <input type="checkbox" id="s-legend" checked style="transform:scale(1.15);"> 印刷に表示する
+    </label></div>
+  <div class="sf" style="display:none;"><label>デフォルトケア</label>
+    <select id="s-cnec" style="border:1px solid #ccc;border-radius:4px;padding:6px 8px;font-size:12px;">
+      <option value="有り">有り</option>
+      <option value="無し">無し</option>
+    </select></div>
+</div>
+
+<!-- ツールバー -->
+<div class="toolbar no-print">
+  <button class="tbtn tbtn-blue" onclick="addRow()">＋ 1名追加</button>
+  <button class="tbtn" onclick="addRows(5)">＋ 5名</button>
+  <button class="tbtn" onclick="addRows(10)">＋ 10名</button>
+  <button class="tbtn" onclick="addRows(30)">＋ 30名</button>
+  <button class="tbtn" onclick="copyLast()">↩ 最後の行を複製</button>
+  <button class="tbtn" onclick="clearFindings()">健診結果をリセット</button>
+  <button class="tbtn" id="undo-btn" onclick="undoDelete()" disabled
+    style="background:#e67e22;color:white;border-color:#e67e22;opacity:.4;"
+    title="最後に削除した行を元に戻す（最大30件）">↩ 削除を元に戻す</button>
+  <button class="tbtn" style="background:#1a6b3c;color:white;border-color:#1a6b3c;" onclick="openXlImport()">📥 Excelインポート</button>
+  <a id="xl-tmpl-link" href="#" download="kensin_import_template.xlsx" style="display:none;"></a>
+  <button class="tbtn" style="background:#1a3f6f;color:white;border-color:#1a3f6f;" onclick="document.getElementById('draft-file-input').click()">📲 医院の下書きを読込</button>
+  <input id="draft-file-input" type="file" accept=".json,application/json" style="display:none;" onchange="loadDraftFile(this)">
+  <span id="save-status" style="margin-left:auto;font-size:11px;color:#1a6b3c;font-weight:bold;">💾 自動保存</span>
+  <span class="pcount" id="pcount" style="margin-left:16px;">0名</span>
+</div>
+
+<!-- 患者テーブル -->
+<div class="tbl-wrap">
+<table>
+<thead>
+<tr>
+  <th style="width:48px;text-align:center;"><div style="font-size:9px;line-height:1.1;">#<br><label style="cursor:pointer;font-weight:normal;color:#fff;"><input type="checkbox" id="prev-all" checked onchange="togglePrevAll(this)" style="vertical-align:middle;"> 全</label></div></th>
+  <th style="width:130px;">患者名・居室</th>
+  <th style="width:140px;">所見入力<br>（治療＋口腔状態）</th>
+  <th style="min-width:260px;">治療アドバイス</th>
+  <th style="min-width:260px;">ケアアドバイス</th>
+  <th style="width:46px;">歯式・<br>写真</th>
+  <th style="width:65px;">操作</th>
+</tr>
+</thead>
+<tbody id="tbody">
+</tbody>
+</table>
+</div>
+
+<div class="statusbar no-print">
+  <span>💡 <strong>アドバイスキー</strong>をクリックして選択 → 全文に展開されます</span>
+  <span>|</span>
+  <span>患者名の後にTabキーで次の列へ移動</span>
+  <span>|</span>
+  <span>「複製」で同じ所見の患者を素早く追加</span>
+</div>
+</div><!-- end .wrap.no-print -->
+
+<!-- プレビュー -->
+<div class="no-print">
+  <button class="prev-toggle" onclick="togglePreview()">📄 プレビューを表示 / 非表示</button>
+</div>
+<div class="prev-wrap" id="prev-wrap">
+  <div style="width:100%;text-align:center;color:#666;font-size:13px;padding:20px;" id="prev-placeholder">
+    「一括プレビュー生成」ボタンを押すと、ここに全員分の結果書が表示されます
+  </div>
+</div>
+
+<script>
+
+/* ── 補助歯式2 ── */
+let _sub2TargetId = null;
+
+function toggleSub2Mode(){
+  showSub2Mode = !showSub2Mode;
+  const btn  = document.getElementById('sub2btn');
+  const area = document.getElementById('sub2-area');
+  btn.style.background = showSub2Mode ? 'rgba(232,197,71,.4)' : 'rgba(255,255,255,.1)';
+  btn.style.borderColor = showSub2Mode ? 'rgba(232,197,71,.7)' : 'rgba(255,255,255,.3)';
+  btn.textContent = showSub2Mode ? '🟡 補助歯式2モード：ON（歯をクリック）' : '＋ 補助歯式2（内側）モード';
+  area.style.display = showSub2Mode ? 'block' : 'none';
+  if(!showSub2Mode) closeSub2Popup();
+  renderTcModal();
+}
+
+function openSub2Popup(id, evt){
+  _sub2TargetId = id;
+  const popup = document.getElementById('sub2-popup');
+  document.getElementById('sub2-popup-id').textContent = id.replace(/([UL][RL])/,'$1-') + '（現在：' + (sub2St[id]||'なし') + '）';
+  // 現在値をハイライト
+  document.querySelectorAll('.s2pb').forEach(b => {
+    b.style.outline = (b.textContent.trim() === (sub2St[id]||'')) ? '2px solid white' : 'none';
+  });
+  popup.style.display = 'block';
+  // 位置調整
+  const x = Math.min(evt.clientX, window.innerWidth - 220);
+  const y = Math.min(evt.clientY, window.innerHeight - 180);
+  popup.style.left = x + 'px';
+  popup.style.top  = y + 'px';
+}
+
+function closeSub2Popup(){
+  document.getElementById('sub2-popup').style.display = 'none';
+  _sub2TargetId = null;
+}
+
+function setSub2FromPopup(val){
+  if(!_sub2TargetId) return;
+  if(val === '') delete sub2St[_sub2TargetId];
+  else           sub2St[_sub2TargetId] = val;
+  document.getElementById('sub2-popup-id').textContent =
+    _sub2TargetId + '（現在：' + (sub2St[_sub2TargetId]||'なし') + '）';
+  document.querySelectorAll('.s2pb').forEach(b => {
+    b.style.outline = (b.textContent.trim() === (sub2St[_sub2TargetId]||'')) ? '2px solid white' : 'none';
+  });
+  renderTcModal();
+}
+
+function clickTSub2(id,evt){
+  if(!showSub2Mode)return;
+  openSub2Popup(id,evt||window.event);
+}
+/* ==================== TOOTH CHART ==================== */
+const TD=[{id:'UR8',n:8,cx:35.4,cy:153.7},{id:'UR7',n:7,cx:39.0,cy:128.4},{id:'UR6',n:6,cx:46.4,cy:104.6},{id:'UR5',n:5,cx:57.3,cy:83.2},{id:'UR4',n:4,cx:71.2,cy:64.9},{id:'UR3',n:3,cx:87.5,cy:50.6},{id:'UR2',n:2,cx:105.8,cy:40.7},{id:'UR1',n:1,cx:125.1,cy:35.6},{id:'UL1',n:1,cx:144.9,cy:35.6},{id:'UL2',n:2,cx:164.2,cy:40.7},{id:'UL3',n:3,cx:182.5,cy:50.6},{id:'UL4',n:4,cx:198.8,cy:64.9},{id:'UL5',n:5,cx:212.7,cy:83.2},{id:'UL6',n:6,cx:223.6,cy:104.6},{id:'UL7',n:7,cx:231.0,cy:128.4},{id:'UL8',n:8,cx:234.6,cy:153.7},{id:'LR8',n:8,cx:35.4,cy:186.3},{id:'LR7',n:7,cx:39.0,cy:211.6},{id:'LR6',n:6,cx:46.4,cy:235.4},{id:'LR5',n:5,cx:57.3,cy:256.8},{id:'LR4',n:4,cx:71.2,cy:275.1},{id:'LR3',n:3,cx:87.5,cy:289.4},{id:'LR2',n:2,cx:105.8,cy:299.3},{id:'LR1',n:1,cx:125.1,cy:304.4},{id:'LL1',n:1,cx:144.9,cy:304.4},{id:'LL2',n:2,cx:164.2,cy:299.3},{id:'LL3',n:3,cx:182.5,cy:289.4},{id:'LL4',n:4,cx:198.8,cy:275.1},{id:'LL5',n:5,cx:212.7,cy:256.8},{id:'LL6',n:6,cx:223.6,cy:235.4},{id:'LL7',n:7,cx:231.0,cy:211.6},{id:'LL8',n:8,cx:234.6,cy:186.3}];
+const TOOLS_C=[
+  {t:'',  label:'消去',   svgFill:'#fff',   svgText:'#aaa'},
+  {t:'x', label:'× 欠損', svgFill:'#c8c8c8',svgText:'#555'},
+  {t:'o', label:'○ 健康', svgFill:'#f0fff0',svgText:'#006600'},
+  {t:'C1',label:'C1',     svgFill:'#fff9c4',svgText:'#5d4037'},
+  {t:'C2',label:'C2',     svgFill:'#ffe082',svgText:'#3e2723'},
+  {t:'C3',label:'C3',     svgFill:'#ffab76',svgText:'#000'},
+  {t:'C4',label:'C4',     svgFill:'#d32f2f',svgText:'#fff'},
+  {t:'P', label:'P 歯周', svgFill:'#ffcdd2',svgText:'#b71c1c'},
+  {t:'CR',label:'CR 白詰',svgFill:'#e3f2fd',svgText:'#1565c0'},
+  {t:'Cr',label:'Cr 金冠',svgFill:'#eeeeee',svgText:'#333'},
+  {t:'FM',label:'FM 全金',svgFill:'#bdbdbd',svgText:'#333'},
+  {t:'MB',label:'MB 白冠',svgFill:'#c8e6c9',svgText:'#1b5e20'},
+  {t:'HR',label:'HR',     svgFill:'#e1f5fe',svgText:'#0d47a1'},
+  {t:'In',label:'In',     svgFill:'#e1bee7',svgText:'#4a148c'},
+  {t:'AF',label:'AF',     svgFill:'#b2dfdb',svgText:'#00695c'},
+  {t:'HJK',label:'HJK',  svgFill:'#cfd8dc',svgText:'#37474f'},
+  {t:'WSD',label:'WSD',  svgFill:'#ffe0b2',svgText:'#e65100'},
+  {t:'RF',label:'根面板', svgFill:'#fce4ec',svgText:'#880e4f'},
+];
+const TOOLS_BG=['#aaa','#888','rgba(255,255,255,.1)','#b8860b','#cc7000','#c84b00','#9b1b00','#c0392b','#2471a3','#555','#1a6b3c'];
+
+let tcCurrentBtn=null;  // 編集中の歯式ボタン
+let tcSt={};            // 編集中の歯の状態
+let tcTool='';          // 選択中のツール
+
+function openChartBase(btn){
+  tcCurrentBtn=btn;
+  tcSt=JSON.parse(btn.dataset.st||'{}');
+  Object.keys(sub2St).forEach(k=>delete sub2St[k]);
+  const s2=JSON.parse(btn.dataset.sub2||'{}');
+  Object.assign(sub2St,s2);
+  tcTool='';
+  document.querySelectorAll('.tc-tool').forEach(b=>b.classList.remove('active'));
+  document.querySelector('.tc-tool[data-t=""]').classList.add('active');
+  renderTcModal();
+  document.getElementById('tc-modal').classList.add('open');
+}
+function closeChart(){document.getElementById('tc-modal').classList.remove('open');}
+function saveChart(){
+  tcCurrentBtn.dataset.st=JSON.stringify(tcSt);
+  const hasData=Object.keys(tcSt).length>0;
+  tcCurrentBtn.classList.toggle('has-data',hasData);
+  tcCurrentBtn.textContent=hasData?`歯式(${Object.keys(tcSt).length})` :'歯式';
+  closeChart();
+}
+function clearChart(){tcSt={};renderTcModal();}
+function clearRecord(){
+  // 歯式リセット
+  tcSt={};
+  // 歯式アノテーションリセット
+  const rid=tcCurrentBtn?.closest('tr')?.id||mpCurrentRowId||'';
+  if(rid&&patientAnnos[rid])patientAnnos[rid]=[];
+  renderTcModal();
+  // 写真リセット
+  if(mpCurrentRowId&&patientPhotos[mpCurrentRowId]){
+    [1,2,3,4].forEach(n=>{
+      patientPhotos[mpCurrentRowId].ph[n]=null;
+      patientPhotos[mpCurrentRowId].annos[n]=[];
+      patientPhotos[mpCurrentRowId].caps[n]='';
+      updateThumb(n);
+    });
+    renderMPh();
+  }
+}
+function setTcTool(t,el){
+  tcTool=t;
+  document.querySelectorAll('.tc-tool').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+}
+function clickTcTooth(id,evt){
+  if(showSub2Mode){openSub2Popup(id,evt||window.event);return;}
+  if(tcTool===''){delete tcSt[id];}
+  else if(tcSt[id]===tcTool){delete tcSt[id];}
+  else{tcSt[id]=tcTool;}
+  renderTcModal();
+}
+function sym2(s){return s==='x'?'×':s==='o'?'○':s;}
+/* renderTcModal → 下部の拡張版を使用 */
+
+/* ==================== TEMPLATES ==================== */
+const TM_T={
+  calculus:'歯石が付着しております。歯石は歯周病を助長する原因にもなりますので、器機を使用しての除去治療が必要になります。',
+  cavity:'虫歯が見受けられます。悪化する前に早めに治療されることをお勧めいたします。',
+  denture_new:'しっかり噛むことができない状態です。新しい入れ歯の作製をご検討ください。',
+  denture_fix:'入れ歯の調整・修理が必要な状態です。早めに受診されることをお勧めいたします。',
+  denture_adj:'入れ歯の調整が必要な状態です。お食事に支障がないよう早めに受診されることをお勧めいたします。',
+  denture_new_u:'上顎の入れ歯が合わず、新調が必要な状態です。新しい入れ歯の作製をご検討ください。',
+  denture_new_l:'下顎の入れ歯が合わず、新調が必要な状態です。新しい入れ歯の作製をご検討ください。',
+  denture_fix_u:'上顎の入れ歯の調整・修理が必要な状態です。早めに受診されることをお勧めいたします。',
+  denture_fix_l:'下顎の入れ歯の調整・修理が必要な状態です。早めに受診されることをお勧めいたします。',
+  denture_adj_u:'上顎の入れ歯の調整が必要な状態です。お食事に支障がないよう早めに受診されることをお勧めいたします。',
+  denture_adj_l:'下顎の入れ歯の調整が必要な状態です。お食事に支障がないよう早めに受診されることをお勧めいたします。',
+  ok:'現時点では特に緊急の治療を要する状態はございません。引き続き定期的なメンテナンスをお勧めいたします。',
+  spring:'バネがかかる歯が破折しております。このままですとお食事等に影響が出ますので、入れ歯の調整等受診する必要がございます。',
+  denture_none_diff:'入れ歯をお持ちでない様です。可能であれば新製を検討されても良いと思います。（要診査）',
+  extract:'抜歯が必要な状態と思われます。早めに歯科医院を受診されることをお勧めいたします。',
+  refuse:'拒否があるため、十分に口腔内を確認することが出来ませんでした。',
+};
+const TM_C={
+  plaque:'プラーク（細菌のかたまり）が付着しており、歯周病が進行しております。今後は治療と併せて歯科衛生士による専門的口腔ケアも定期的に受診する必要がございます。',
+  perio:'お口の中の清掃状態があまりよくなく、プラーク（細菌の塊）や歯石の付着があり、歯周病の進行も認められます。',
+  aspiration:'お口の中の細菌は、虫歯や歯周病の原因だけでなく誤嚥性肺炎のリスクが高くなることやお身体全体に影響を及ぼします。定期的に歯科による専門的口腔ケアを受診する必要がございます。',
+  regular:'定期的に歯科衛生士による専門的口腔ケアを受診されることをお勧めします。',
+  care_impl:'口腔ケアも実施します。定期的に歯科衛生士による専門的口腔ケアを受診されることをお勧めします。',
+  dry_mouth:'口腔内が乾燥しています。唾液の分泌量が減少すると自浄作用が低下して、細菌が繁殖しやすく注意が必要です。',
+  kahin:'口腔内の乾燥やその他が原因で、口腔内のかさぶたの様な汚れが見られます。このような口腔内状態は、通常よりも専門的な口腔ケアの関与が必要です。',
+};
+const T_KEYS=[
+  {k:'calculus',l:'歯石除去'},{k:'cavity',l:'虫歯治療'},{k:'denture_new_u',l:'上/新調'},{k:'denture_new_l',l:'下/新調'},{k:'denture_fix_u',l:'上/修理'},{k:'denture_fix_l',l:'下/修理'},{k:'denture_adj_u',l:'上/調整'},{k:'denture_adj_l',l:'下/調整'},{k:'denture_new',l:'入れ歯新調'},
+  {k:'denture_fix',l:'入れ歯修理'},{k:'ok',l:'問題なし'},{k:'spring',l:'バネ破折'},
+  {k:'extract',l:'抜歯'},{k:'refuse',l:'拒否'},
+];
+const C_KEYS=[
+  {k:'plaque',l:'プラーク多'},{k:'perio',l:'歯周病進行'},{k:'aspiration',l:'誤嚥リスク'},
+  {k:'regular',l:'定期ケア'},{k:'dry_mouth',l:'口腔内乾燥'},{k:'kahin',l:'痂皮'},
+];
+
+/* ==================== ROW MANAGEMENT ==================== */
+let rowId=0;
+const undoStack=[];
+
+function updateUndoBtn(){
+  const btn=document.getElementById('undo-btn');
+  if(!btn)return;
+  btn.disabled=undoStack.length===0;
+  btn.style.opacity=undoStack.length?'1':'.4';
+}
+
+function mkSelect(opts,defVal,cls){
+  return `<select class="${cls}">${opts.map(o=>
+    `<option value="${o.v}" ${o.v===defVal?'selected':''}>${o.l}</option>`
+  ).join('')}</select>`;
+}
+
+const LV_OPTS=[{v:'',l:'なし'},{v:'少量',l:'少量'},{v:'中量',l:'中量'},{v:'多量',l:'多量'}];
+const PE_OPTS=[{v:'',l:'なし'},{v:'軽度',l:'軽度'},{v:'中度',l:'中度'},{v:'重度',l:'重度'}];
+const TN_OPTS=[{v:'有り',l:'有り'},{v:'緊急に有り',l:'緊急'},{v:'無し',l:'無し'}];
+const CN_OPTS=[{v:'有り',l:'有り'},{v:'無し',l:'無し'}];
+
+function mkAdvKeys(keys,group){
+  return keys.map(k=>
+    `<span class="ak" data-key="${k.k}" data-group="${group}" onclick="togKey(this)">${k.l}</span>`
+  ).join('');
+}
+
+function addRow(data){
+  const id=rowId++;
+  const d=data||{};
+  const tr=document.createElement('tr');
+  tr.id='row-'+id;
+  // データを行に保管（入力モーダル用）
+  if(d.facility){
+    facilityData[tr.id]=d.facility;
+  }
+  tr.innerHTML=`
+    <td class="rn" id="rn-${id}" style="text-align:center;"><div style="font-size:10px;color:#999;font-weight:bold;" id="rnum-${id}"></div><input type="checkbox" class="prev-ck" checked onchange="updatePrevSelectionVisual(this)" style="margin-top:2px;cursor:pointer;transform:scale(1.1);" title="一括プレビュー対象"></td>
+    <td class="pname-td">
+      <input class="pname" type="text" placeholder="患者名" value="${d.name||''}">
+      <input class="proom" type="text" placeholder="居室番号（任意）" value="${d.room||''}" style="width:100%;margin-top:3px;border:1px solid #ccc;border-radius:3px;padding:3px 6px;font-size:10px;color:#555;">
+    </td>
+    <td style="text-align:center;">
+      <button class="findings-btn" onclick="openFindings(this)" style="width:100%;padding:8px 6px;background:#1a3f6f;color:white;border:none;border-radius:4px;cursor:pointer;font-size:11px;font-weight:bold;">📋 詳細入力</button>
+      <div class="findings-summary" style="margin-top:4px;font-size:9.5px;line-height:1.4;color:#666;min-height:24px;text-align:left;padding:2px 4px;"></div>
+    </td>
+    <td class="adv-cell">
+      <div class="adv-row">
+        <div class="adv-keys">${mkAdvKeys(T_KEYS,'t')}</div>
+        <div class="adv-deco"><button type="button" class="adv-db adv-db-b" onclick="decoAdv(this,'bold')">太字</button><button type="button" class="adv-db adv-db-r" onclick="decoAdv(this,'red')">赤字</button><button type="button" class="adv-db" onclick="clearDeco(this)">解除</button><span class="adv-deco-hint">←文字を選択して装飾</span></div>
+        <textarea class="adv-custom" placeholder="テンプレートを選択→テキスト編集" rows="4">${d.advT||''}</textarea>
+      </div>
+    </td>
+    <td class="adv-cell">
+      <div class="adv-row">
+        <div class="adv-keys">${mkAdvKeys(C_KEYS,'c')}</div>
+        <div class="adv-deco"><button type="button" class="adv-db adv-db-b" onclick="decoAdv(this,'bold')">太字</button><button type="button" class="adv-db adv-db-r" onclick="decoAdv(this,'red')">赤字</button><button type="button" class="adv-db" onclick="clearDeco(this)">解除</button><span class="adv-deco-hint">←文字を選択して装飾</span></div>
+        <textarea class="adv-custom" placeholder="テンプレートを選択→テキスト編集" rows="4">${d.advC||''}</textarea>
+      </div>
+    </td>
+    <td class="ck-td"><button class="tooth-btn" onclick="openChart(this)" data-st="${d.toothSt?JSON.stringify(d.toothSt).replace(/"/g,'&quot;'):''}" title="歯式・写真入力">${(()=>{const l=[];if(d.toothSt&&Object.keys(d.toothSt).length)l.push('歯式('+Object.keys(d.toothSt).length+')');return l.length?l.join('・'):'記録';})()}</button></td>
+    <td>
+      <div class="ops">
+        <button class="op-btn" onclick="copyRow('${id}')" title="複製">複製</button>
+        <button class="op-btn op-del" onclick="delRow('${id}')" title="削除">×</button>
+      </div>
+    </td>`;
+  document.getElementById('tbody').appendChild(tr);
+  // Restore active keys if data provided
+  if(d.tkeys){d.tkeys.forEach(k=>{const el=tr.querySelector(`.ak[data-key="${k}"][data-group="t"]`);if(el)el.classList.add('on');});}
+  if(d.ckeys){d.ckeys.forEach(k=>{const el=tr.querySelector(`.ak[data-key="${k}"][data-group="c"]`);if(el)el.classList.add('on');});}
+  updateFindingsSummary(tr.id);
+  updateNums();
+}
+
+function addRows(n){for(let i=0;i<n;i++)addRow();}
+
+function delRow(id){
+  const tr=document.getElementById('row-'+id);
+  if(!tr)return;
+  // データを完全保存（textareaも直接読む）
+  const data=getRowData(tr);
+  const advTas=tr.querySelectorAll('.adv-custom');
+  data.advT=advTas[0]?advTas[0].value:data.advT;
+  data.advC=advTas[1]?advTas[1].value:data.advC;
+  const prevSibId=tr.previousElementSibling?.id||null;
+  undoStack.push({data, prevSibId});
+  if(undoStack.length>30)undoStack.shift();
+  tr.remove();
+  updateNums();
+  resetPreview();
+  updateUndoBtn();
+}
+
+function undoDelete(){
+  if(!undoStack.length)return;
+  const entry=undoStack.pop();
+  const tbody=document.getElementById('tbody');
+  const prevSib=entry.prevSibId?document.getElementById(entry.prevSibId):null;
+  // addRowでデータを完全復元
+  addRow(entry.data);
+  // 末尾に追加された行を元の位置へ移動
+  const newTr=tbody.lastElementChild;
+  if(prevSib&&prevSib.parentNode===tbody){
+    prevSib.insertAdjacentElement('afterend',newTr);
+  }else if(!entry.prevSibId){
+    tbody.insertAdjacentElement('afterbegin',newTr);
+  }
+  updateNums();
+  updateUndoBtn();
+}
+function resetPreview(){
+  const pw=document.getElementById('prev-wrap');
+  pw.innerHTML='<div style="width:100%;text-align:center;color:#666;font-size:13px;padding:20px;" id="prev-placeholder">「一括プレビュー生成」ボタンを押すと、ここに全員分の結果書が表示されます</div>';
+  pw.classList.remove('show');
+}
+
+function copyRow(id){
+  const tr=document.getElementById('row-'+id);
+  if(!tr)return;
+  const data=getRowData(tr);
+  data.name='';
+  // 施設用：facilityデータはアドレス値ではなくディープコピー（getRowDataで既にコピー済）
+  addRow(data);
+}
+
+function copyLast(){
+  const rows=document.querySelectorAll('#tbody tr');
+  if(!rows.length)return;
+  const last=rows[rows.length-1];
+  const data=getRowData(last);
+  data.name='';
+  addRow(data);
+}
+
+function clearFindings(){
+  if(!confirm('全行の健診結果（患者名・居室以外、写真・歯式図も含む）をリセットしますか？'))return;
+  document.querySelectorAll('#tbody tr').forEach(tr=>{
+    // アドバイスのキー・カスタム文をリセット
+    tr.querySelectorAll('.ak').forEach(a=>a.classList.remove('on'));
+    tr.querySelectorAll('.adv-custom').forEach(t=>t.value='');
+    // 歯式データリセット
+    const rec=tr.querySelector('.tooth-btn');
+    if(rec){rec.dataset.st='';rec.textContent='記録';}
+    const rid=tr.id;
+    // 施設用：所見データもリセット
+    if(rid&&facilityData[rid])delete facilityData[rid];
+    // 写真・アノテーションリセット
+    if(rid&&typeof patientPhotos!=='undefined'&&patientPhotos[rid]){
+      [1,2,3,4].forEach(n=>{
+        patientPhotos[rid].ph[n]=null;
+        patientPhotos[rid].annos[n]=[];
+        patientPhotos[rid].caps[n]='';
+        if(patientPhotos[rid].fileNames)patientPhotos[rid].fileNames[n]='';
+      });
+      if(patientPhotos[rid].findings)delete patientPhotos[rid].findings;
+      if(patientPhotos[rid].denture)delete patientPhotos[rid].denture;
+    }
+    if(rid&&typeof patientAnnos!=='undefined'&&patientAnnos[rid])patientAnnos[rid]=[];
+    // サマリー再計算
+    if(rid)updateFindingsSummary(rid);
+  });
+}
+
+function updateNums(){
+  const rows=document.querySelectorAll('#tbody tr');
+  rows.forEach((tr,i)=>{
+    const rnumDiv=tr.querySelector('[id^="rnum-"]');
+    if(rnumDiv)rnumDiv.textContent=i+1;
+  });
+  document.getElementById('pcount').textContent=rows.length+'名';
+}
+
+function onMulCvm(cb){
+  const tr=cb.closest('tr');if(!tr)return;
+  const num=tr.querySelector('.num-s');
+  if(!num)return;
+  if(cb.checked){num.value='';num.disabled=true;}
+  else{num.disabled=false;}
+}
+
+/* v1.2: 一括プレビュー対象の選択 */
+function togglePrevAll(cb){
+  document.querySelectorAll('#tbody tr input.prev-ck').forEach(c=>{
+    c.checked=cb.checked;
+  });
+  document.querySelectorAll('#tbody tr').forEach(tr=>updatePrevSelectionVisual(tr.querySelector('.prev-ck')));
+}
+function updatePrevSelectionVisual(cb){
+  if(!cb)return;
+  const tr=cb.closest('tr');
+  if(!tr)return;
+  // 未選択行は薄く表示
+  if(cb.checked){
+    tr.style.opacity='1';
+    tr.style.background='';
+  }else{
+    tr.style.opacity='0.55';
+    tr.style.background='#f5f5f5';
+  }
+  // 全選択の状態を更新
+  const all=document.querySelectorAll('#tbody tr input.prev-ck');
+  const checked=document.querySelectorAll('#tbody tr input.prev-ck:checked');
+  const allCb=document.getElementById('prev-all');
+  if(allCb){
+    if(all.length===checked.length)allCb.checked=true;
+    else allCb.checked=false;
+  }
+}
+
+function togKey(el){
+  const wasOn=el.classList.contains('on');
+  el.classList.toggle('on');
+  const cell=el.closest('td');
+  const textarea=cell.querySelector('.adv-custom');
+  if(!textarea)return;
+  const group=el.dataset.group;
+  const tmMap=group==='t'?TM_T:TM_C;
+  const key=el.dataset.key;
+  const txt=tmMap[key]||'';
+  if(!wasOn){
+    // ONになった→末尾に追加
+    if(txt){
+      if(textarea.value.trim())textarea.value+='\n';
+      textarea.value+=txt;
+    }
+  }else{
+    // OFFになった→その文章を削除
+    if(txt){
+      textarea.value=textarea.value.split('\n').filter(function(l){return l.trim()!==txt.trim();}).join('\n').trim();
+    }
+  }
+}
+
+/* 共通⑧ アドバイスの装飾：選択した文字を太字（**）／赤字（!!）でマーク */
+function decoAdv(btn,type){
+  const ta=btn.closest('.adv-row').querySelector('.adv-custom');
+  if(!ta)return;
+  const s=ta.selectionStart,e=ta.selectionEnd;
+  if(s===e){alert('装飾したい文字を選択してから「太字」「赤字」を押してください。');ta.focus();return;}
+  const mk=type==='bold'?'**':'!!';
+  const sel=ta.value.slice(s,e);
+  let out;
+  if(sel.length>=mk.length*2&&sel.slice(0,mk.length)===mk&&sel.slice(-mk.length)===mk){
+    out=sel.slice(mk.length,sel.length-mk.length);  // 既に装飾済み→解除（トグル）
+  }else{
+    out=mk+sel+mk;
+  }
+  ta.value=ta.value.slice(0,s)+out+ta.value.slice(e);
+  ta.focus();
+  ta.setSelectionRange(s,s+out.length);
+}
+function clearDeco(btn){
+  const ta=btn.closest('.adv-row').querySelector('.adv-custom');
+  if(!ta)return;
+  const s=ta.selectionStart,e=ta.selectionEnd;
+  if(s!==e){
+    const cleaned=ta.value.slice(s,e).replace(/\*\*/g,'').replace(/!!/g,'');
+    ta.value=ta.value.slice(0,s)+cleaned+ta.value.slice(e);
+    ta.focus();ta.setSelectionRange(s,s+cleaned.length);
+  }else{
+    ta.value=ta.value.replace(/\*\*/g,'').replace(/!!/g,'');
+    ta.focus();
+  }
+}
+
+/* ==================== DATA EXTRACTION ====================  */
+function getRowData(tr){
+  const _rowId = tr.id;
+  // アドバイス列（adv-cell が2つ）
+  const advCells = tr.querySelectorAll('td.adv-cell');
+  const advTcell = advCells[0];
+  const advCcell = advCells[1];
+  const tkeys = advTcell ? [...advTcell.querySelectorAll('.ak.on')].map(a=>a.dataset.key) : [];
+  const ckeys = advCcell ? [...advCcell.querySelectorAll('.ak.on')].map(a=>a.dataset.key) : [];
+  // 記録ボタンの歯式データ
+  const recBtn = tr.querySelector('.tooth-btn');
+  const toothSt = JSON.parse(
+    (recBtn?.dataset.st||'{}').replace(/&quot;/g,'"')
+  ) || {};
+  return {
+    _rowId,
+    name: tr.querySelector('.pname')?.value.trim()||'',
+    room: tr.querySelector('.proom')?.value.trim()||'',
+    tkeys, ckeys,
+    advT: advTcell?.querySelector('.adv-custom')?.value.trim()||'',
+    advC: advCcell?.querySelector('.adv-custom')?.value.trim()||'',
+    toothSt,
+    facility: facilityData[_rowId] ? JSON.parse(JSON.stringify(facilityData[_rowId])) : null,
+  };
+}
+
+function resolveAdv(keys,custom,tmMap){
+  const parts=keys.map(k=>tmMap[k]).filter(Boolean);
+  if(custom)parts.push(custom);
+  return parts.join('\n');
+}
+
+/* ==================== FORM GENERATION ==================== */
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+/* 共通⑧ アドバイス文字列を装飾HTMLへ変換（**太字** / !!赤字!! / 改行） */
+function fmtAdvice(t){
+  if(!t)return '';
+  let h=esc(t);
+  h=h.replace(/!!([\s\S]+?)!!/g,'<span style="color:#c0392b;">$1</span>');
+  h=h.replace(/\*\*([\s\S]+?)\*\*/g,'<strong>$1</strong>');
+  h=h.replace(/\n/g,'<br>');
+  return h;
+}
+function cb(c,t){return `<div class="pf-ci"><div class="pf-cb">${c?'✓':''}</div><span>${t}</span></div>`;}
+function no(l,s){return `<span class="pf-no${s?' s':''}">${l}</span>`;}
+function nrow(opts,sel){return opts.map((o,i)=>`${i>0?'　・　':''}${no(o,o===sel)}`).join('');}
+
+
+/* ── 印刷用歯式SVG生成 ────────────────────────── */
+const TMAP_C={};TOOLS_C.forEach(t=>TMAP_C[t.t]=t);
+const TD2=[{id:'UR8',n:8,cx:52.3,cy:155.6},{id:'UR7',n:7,cx:55.3,cy:134.6},{id:'UR6',n:6,cx:61.5,cy:114.9},{id:'UR5',n:5,cx:70.5,cy:97.0},{id:'UR4',n:4,cx:82.0,cy:81.9},{id:'UR3',n:3,cx:95.6,cy:69.9},{id:'UR2',n:2,cx:110.7,cy:61.7},{id:'UR1',n:1,cx:126.8,cy:57.5},{id:'UL1',n:1,cx:143.2,cy:57.5},{id:'UL2',n:2,cx:159.3,cy:61.7},{id:'UL3',n:3,cx:174.4,cy:69.9},{id:'UL4',n:4,cx:188.0,cy:81.9},{id:'UL5',n:5,cx:199.5,cy:97.0},{id:'UL6',n:6,cx:208.5,cy:114.9},{id:'UL7',n:7,cx:214.7,cy:134.6},{id:'UL8',n:8,cx:217.7,cy:155.6},{id:'LR8',n:8,cx:52.3,cy:184.4},{id:'LR7',n:7,cx:55.3,cy:205.4},{id:'LR6',n:6,cx:61.5,cy:225.1},{id:'LR5',n:5,cx:70.5,cy:243.0},{id:'LR4',n:4,cx:82.0,cy:258.1},{id:'LR3',n:3,cx:95.6,cy:270.1},{id:'LR2',n:2,cx:110.7,cy:278.3},{id:'LR1',n:1,cx:126.8,cy:282.5},{id:'LL1',n:1,cx:143.2,cy:282.5},{id:'LL2',n:2,cx:159.3,cy:278.3},{id:'LL3',n:3,cx:174.4,cy:270.1},{id:'LL4',n:4,cx:188.0,cy:258.1},{id:'LL5',n:5,cx:199.5,cy:243.0},{id:'LL6',n:6,cx:208.5,cy:225.1},{id:'LL7',n:7,cx:214.7,cy:205.4},{id:'LL8',n:8,cx:217.7,cy:184.4}];
+
+const SUB2TOOLS=[
+  {t:'',   label:'消去',     bg:'rgba(255,255,255,.2)',svgFill:'#fff',svgText:'#aaa'},
+  {t:'Br', label:'Br',      bg:'#5d4037',svgFill:'#d7ccc8',svgText:'#3e2723'},
+  {t:'|',  label:'｜',      bg:'#1565c0',svgFill:'#bbdefb',svgText:'#1565c0'},
+  {t:'M1', label:'M1',      bg:'#2e7d32',svgFill:'#c8e6c9',svgText:'#1b5e20'},
+  {t:'M2', label:'M2',      bg:'#1b5e20',svgFill:'#a5d6a7',svgText:'#1b5e20'},
+  {t:'M3', label:'M3',      bg:'#33691e',svgFill:'#dcedc8',svgText:'#33691e'},
+  {t:'Ip', label:'Ip植',    bg:'#ad1457',svgFill:'#f8bbd0',svgText:'#880e4f'},
+  {t:'+C', label:'+C',       bg:'#e65100',svgFill:'#ffe0b2',svgText:'#bf360c'},
+  {t:'ハセツ',label:'ハセツ', bg:'#4a148c',svgFill:'#e1bee7',svgText:'#4a148c'},
+  {t:'セメ充',label:'セメ充', bg:'#006064',svgFill:'#b2ebf2',svgText:'#006064'},
+  {t:'鈎歯', label:'鈎歯',     bg:'#37474f',svgFill:'#eceff1',svgText:'#37474f'},
+];
+const SUB2MAP={};SUB2TOOLS.forEach(t=>SUB2MAP[t.t]=t);
+const sub2St={};
+let curSub2='';
+let showSub2Mode=false;
+
+function sym(s){return s==='x'?'×':s==='o'?'○':s;}
+/* 歯式③ 舌イラスト（舌の汚れ時に歯式図中央へ表示） */
+function tongueSVG(s3R,s3A){
+  const cmt='舌の汚れ：'+(s3A||'多量');
+  // 横幅は中心x=135を基準に1.5倍
+  return '<g class="tongue-ill" pointer-events="none">'
+    +'<ellipse cx="135" cy="150" rx="40.5" ry="15" fill="#484848"/>'
+    +'<path d="M135,140 C187.5,142 195,200 160.5,232 C148.5,245 121.5,245 109.5,232 C75,200 82.5,142 135,140 Z" fill="#d0d0d0" stroke="#8d8d8d" stroke-width="1.6"/>'
+    +'<line x1="135" y1="151" x2="135" y2="225" stroke="#a5a5a5" stroke-width="1.6" stroke-linecap="round"/>'
+    +'<rect x="93" y="251" width="84" height="15" rx="3" fill="#ffffff" opacity="0.82"/>'
+    +'<text x="135" y="262" font-size="10" text-anchor="middle" fill="#b3001b" font-weight="bold" font-family="sans-serif">'+cmt+'</text>'
+    +'</g>';
+}
+function chartSVG(toothSt, rowId, fac){
+  const p=[];
+  p.push(`  <defs><clipPath id='cup'><rect x='0' y='0' width='270' height='171'/></clipPath><clipPath id='clo'><rect x='0' y='169' width='270' height='161'/></clipPath></defs>
+  <ellipse cx='135' cy='165' rx='112' ry='142' fill='#d4d4d4' clip-path='url(#cup)'/>
+  <ellipse cx='135' cy='165' rx='88'  ry='118' fill='white'   clip-path='url(#cup)'/>
+  <ellipse cx='135' cy='175' rx='112' ry='142' fill='#d4d4d4' clip-path='url(#clo)'/>
+  <ellipse cx='135' cy='175' rx='88'  ry='118' fill='white'   clip-path='url(#clo)'/>
+  <rect x='0' y='162' width='270' height='16' fill='white'/>
+  <line x1='135' y1='10' x2='135' y2='320' stroke='#bbb' stroke-width='0.8' stroke-dasharray='4,3'/>
+  <line x1='0' y1='170' x2='270' y2='170' stroke='#bbb' stroke-width='0.6' stroke-dasharray='4,3'/>
+  <text x='7' y='174' font-size='12' fill='#888' font-family='sans-serif'>右</text>
+  <text x='250' y='174' font-size='12' fill='#888' font-family='sans-serif'>左</text>`);
+  // 歯式③ 舌イラスト（舌の汚れ時）
+  if(fac&&fac.s3)p.push(tongueSVG(fac.s3R,fac.s3A));
+  for(const t of TD){
+    const st=toothSt[t.id]||'';
+    const td=TMAP_C[st]||TMAP_C[''];
+    const fill=st?td.svgFill:'#fff';
+    const stroke=st?'#444':'#bbb';
+    const sw=st?'1.5':'0.9';
+    const tc=st?(td.svgText||'#000'):'#bbb';
+    const fs=st&&st.length>2?'7':'9';
+    const isU=t.id.startsWith('U');
+    const acx=135,acy=isU?165:175;
+    const dx=t.cx-acx,dy=t.cy-acy;
+    const mag=Math.sqrt(dx*dx+dy*dy)||1;
+    const nr=18;
+    const nx=+(t.cx+nr*dx/mag).toFixed(1);
+    const ny=+(t.cy+nr*dy/mag+3.5).toFixed(1);
+    p.push(`<circle cx="${t.cx}" cy="${t.cy}" r="9" fill="${fill}" stroke="${stroke}" stroke-width="${sw}"/>`+
+      (st?`<text x="${t.cx}" y="${t.cy+3.5}" font-size="${fs}" text-anchor="middle" fill="${tc}" font-weight="bold" font-family="sans-serif">${sym(st)}</text>`:'')+
+      `<text x="${nx}" y="${ny}" font-size="8" text-anchor="middle" fill="#555" font-family="sans-serif">${t.n}</text>`);
+  }
+  // 内側アーチ（歯式2）テキストのみ
+  for(const t of TD2){
+    const s2pr=sub2St[t.id]||'';
+    if(!s2pr)continue;
+    const s2dpr=SUB2MAP[s2pr];
+    const fs2pr=s2pr.length>2?'5':'6.5';
+    p.push(`<text x="${t.cx}" y="${t.cy+2.5}" font-size="${fs2pr}" text-anchor="middle" fill="${s2dpr?s2dpr.svgText:'#444'}" font-weight="bold" font-family="sans-serif">${s2pr}</text>`);
+  }
+  // 自由書き込みアノテーション（印刷用）
+  const annList=(typeof patientAnnos!=='undefined' && rowId && patientAnnos[rowId])?patientAnnos[rowId]:[];
+  if(annList.length){
+    p.push(`<g>${annList.map(a=>tcAsvg(a)).join('')}</g>`);
+  }
+  return `<svg viewBox="0 0 270 348" style="width:100%;height:auto;">${p.join('')}</svg>`;
+}
+function nrowM(opts,sel){return opts.map((o,i)=>`${i>0?'　・　':''}${noM(o,o===sel)}`).join('');}
+
+function noM(l,s){return `<span class="pf-no${s?' s':''}">${l}</span>`;}
+function ecM(l,s){const sel=(l===s);const xc=sel?(l==='不要'?' s-not':l==='必要'?' s-need':l==='緊急'?' s-urgent':''):'';return `<td class="ev${sel?' s'+xc:''}">${l}</td>`;}
+
+function genForm(d,shared){
+  const rowId=d._rowId||'';
+  const _pd=patientPhotos[rowId]||{};
+  const _hasPhoto=[1,2,3,4].some(n=>_pd.ph&&_pd.ph[n]);
+  const rtype=_hasPhoto?'photo':((document.getElementById('s-rtype')?.value)||'shashiki');
+  const fac=esc(shared.fac)||'　　　　　';
+  const room=d.room?esc(d.room):'';
+  const pat=esc(d.name)||'　　　　';
+  const doc=esc(shared.doc);
+  const cli=esc(shared.cli);
+  const tel=esc(shared.tel);
+  const date=esc(shared.date)||'';
+  const advT=fmtAdvice(d.advT);
+  const advC=fmtAdvice(d.advC);
+  const facRoom=room?`${fac}　${room}`:`${fac}`;
+  const f=d.facility||{};
+
+  // ── 表示ヘルパー（v1.1: 【】で括る）
+  const tagRed=t=>`<strong style="color:#c0392b;background:#ffe0e0;padding:1px 6px;border-radius:3px;-webkit-print-color-adjust:exact;print-color-adjust:exact;color-adjust:exact;">【${t}】</strong>`;
+  const tagBlk=t=>`<strong>【${t}】</strong>`;
+  const tagGry=t=>`<span style="color:#bbb;text-decoration:line-through;font-size:.95em;">【${t}】</span>`;
+  const tagYel=t=>`<strong style="background:#fff3b0;color:#000;padding:0 5px;border-radius:3px;-webkit-print-color-adjust:exact;print-color-adjust:exact;color-adjust:exact;">【${t}】</strong>`;
+  // v1.2: 歯式タイプは選択側のみ表示（非選択側=取消し線は非表示）、写真タイプは両方表示
+  const isShashiki=(rtype==='shashiki');
+  const yn=isShashiki
+    ? (isProb,hYes,hNo)=>`${isProb?tagRed(hYes):tagBlk(hNo)}`
+    : (isProb,hYes,hNo)=>`${isProb?tagRed(hYes):tagGry(hYes)} / ${isProb?tagGry(hNo):tagBlk(hNo)}`;
+  const sel=isShashiki
+    ? (isOn,opt)=>isOn?tagYel(opt):''
+    : (isOn,opt,...allOpts)=>allOpts.map(o=>(o===opt&&isOn)?tagYel(o):tagGry(o)).join('・');
+  const ck=on=>on?`<span style="font-size:11pt;color:#1565c0;font-weight:bold;-webkit-print-color-adjust:exact;print-color-adjust:exact;color-adjust:exact;">☑</span>`:`<span style="color:#aaa;">☐</span>`;
+  const ecM=(l,sv)=>{const isSel=(l===sv);const xc=isSel?(l==='不要'?' s-not':l==='必要'?' s-need':l==='緊急'?' s-urgent':''):'';return `<td class="ev${isSel?' s'+xc:''}">${l}</td>`;};
+
+  // ── 必要な治療
+  const treatItems=[];
+  const anyTreat=f.cv||f.dnU||f.dnL||f.perio;
+  if(f.noProb&&!anyTreat){treatItems.push(`<div class="fac-li">${ck(true)} 特に問題はありません。</div>`);}
+  if(f.cv){
+    const cvText=f.cvM?'複数本':`${f.cvN||'　'}本`;
+    treatItems.push(`<div class="fac-li">${ck(true)} 治療が必要な歯が ${tagYel(cvText)} あります。</div>`);
+  }
+  if(f.dnU){
+    const dnUVal=f.dnUT||'新製';
+    const dnUTxt=(dnUVal==='適合良好')?`<strong style="background:#c8e6c9;color:#1b5e20;padding:1px 6px;border-radius:3px;-webkit-print-color-adjust:exact;print-color-adjust:exact;color-adjust:exact;">【適合良好】</strong>`:(dnUVal==='お持ちでない')?`${tagRed('お持ちでありません')}`:`${tagRed(dnUVal)}が必要です`;
+    const diff=f.dnUD?` ${tagRed('新製困難')}`:'';
+    treatItems.push(`<div class="fac-li">${ck(true)} 入れ歯（上顎） → ${dnUTxt}${diff}</div>`);
+  }
+  if(f.dnL){
+    const dnLVal=f.dnLT||'新製';
+    const dnLTxt=(dnLVal==='適合良好')?`<strong style="background:#c8e6c9;color:#1b5e20;padding:1px 6px;border-radius:3px;-webkit-print-color-adjust:exact;print-color-adjust:exact;color-adjust:exact;">【適合良好】</strong>`:(dnLVal==='お持ちでない')?`${tagRed('お持ちでありません')}`:`${tagRed(dnLVal)}が必要です`;
+    const diff=f.dnLD?` ${tagRed('新製困難')}`:'';
+    treatItems.push(`<div class="fac-li">${ck(true)} 入れ歯（下顎） → ${dnLTxt}${diff}</div>`);
+  }
+  if(f.perio){treatItems.push(`<div class="fac-li">${ck(true)} 歯周病治療の必要性が ${tagRed('あります')}</div>`);}
+  if(treatItems.length===0)treatItems.push('<div class="fac-li" style="color:#888;">（未入力）</div>');
+
+  // ── 口腔内9項目
+  const sl=[];
+  if(f.s1)sl.push(`<div class="fac-li">${ck(true)} 開口の問題：開口に ${yn(true,'問題があります','問題がありません')}</div>`);
+  if(f.s2)sl.push(`<div class="fac-li">${ck(true)} 歯の汚れ：お口の ${sel(true,f.s2R||'全体','全体','一部')} に ${sel(true,f.s2A||'多量','少量','中量','多量')} の歯垢があります。</div>`);
+  if(f.s3)sl.push(`<div class="fac-li">${ck(true)} 舌の汚れ：舌の ${sel(true,f.s3R||'全体','全体','一部')} に ${sel(true,f.s3A||'多量','少量','中量','多量')} の汚れがあります。</div>`);
+  if(f.s4)sl.push(`<div class="fac-li">${ck(true)} 歯ぐきの腫れ：歯ぐきに腫れが ${yn(true,'あります','ありません')}</div>`);
+  if(f.s5)sl.push(`<div class="fac-li">${ck(true)} 歯ぐきの出血：歯ぐきに出血が ${yn(true,'あります','ありません')}</div>`);
+  if(f.s6)sl.push(`<div class="fac-li">${ck(true)} 奥歯での咬合：左右両方の奥歯で咬合が ${yn(true,'不可です','可能です')}</div>`);
+  if(f.s7)sl.push(`<div class="fac-li">${ck(true)} むせ：むせが ${yn(true,'あります','ありません')}</div>`);
+  if(f.s8)sl.push(`<div class="fac-li">${ck(true)} うがい：ご自身でうがいが ${yn(true,'不可です','可能です')}</div>`);
+  if(f.s9)sl.push(`<div class="fac-li">${ck(true)} 溜め込み：食物残渣が ${sel(true,f.s9A||'多量','少量','中量','多量')} ${tagRed('あります')}</div>`);
+  if(!sl.length)sl.push('<div class="fac-li" style="color:#888;">（特記事項なし）</div>');
+
+  // ── その他（チェック有のみ）
+  const otherLines=[];
+  if(f.oCalc)otherLines.push(`<div class="fac-li">${ck(true)} お口の ${sel(true,f.oCalcR||'全体','全体','一部')} に歯石の付着があります。</div>`);
+  if(f.oDry)otherLines.push(`<div class="fac-li">${ck(true)} ${tagRed('口腔内乾燥あり')}</div>`);
+  if(f.oOdor)otherLines.push(`<div class="fac-li">${ck(true)} ${tagRed('口臭あり')}</div>`);
+  if((f.oFree||'').trim())otherLines.push(`<div class="fac-li">${ck(true)} ${esc(f.oFree)}</div>`);
+
+  // ── 写真
+  const pd=patientPhotos[rowId]||{};
+  const photoNums=[1,2,3,4].filter(n=>pd.ph&&pd.ph[n]);
+  const hasPhoto=photoNums.length>0;
+  const photoCnt=photoNums.length;
+  const gridCols=photoCnt===1?'1fr':'1fr 1fr';
+  const phMaxH=photoCnt<=2?48:72;  // 写真② 2枚まで1ページ／3枚以上は2ページ可
+
+  // ── 歯式凡例（v1.1: 歯式タイプのみ）
+  const legendHtml=`<div class="pf-legend">
+    <div class="pf-legend-h">歯式記号の見方</div>
+    <div class="pf-legend-grid">
+      <span><b>○</b>＝健康歯</span><span><b>×</b>＝欠損</span>
+      <span><b>C1〜C4</b>＝虫歯進行度</span><span><b>P</b>＝歯周病</span>
+      <span><b>CR</b>＝白色充填</span><span><b>Cr</b>＝金属冠</span>
+      <span><b>FM</b>＝全金属</span><span><b>MB</b>＝メタルボンド</span>
+      <span><b>HR</b>＝ハイブリッド</span><span><b>In</b>＝インレー</span>
+      <span><b>AF</b>＝アマルガム</span><span><b>HJK</b>＝硬質金属</span>
+      <span><b>WSD</b>＝楔状欠損</span><span><b>RF</b>＝根面板</span>
+      <span><b>｜Br</b>＝ブリッジ</span><span><b>M1〜3</b>＝義歯バネ</span>
+      <span><b>Ip</b>＝インプラント（歯式2）</span>
+    </div>
+  </div>`;
+  // 歯式① 凡例の表示／非表示（共通設定のチェックに連動）
+  const showLegend=document.getElementById('s-legend')?document.getElementById('s-legend').checked:true;
+
+  // フッター（医師名空欄時はラベル非表示）
+  const drLine=doc?`<div>歯科医師名：<strong>${doc}</strong></div>`:`<div></div>`;
+
+  // 写真案内＋写真本体は最下部
+  const photoBlock=hasPhoto?`<div class="pf-note">お口の状態は口腔内画像をご覧ください。（画像が${photoCnt}枚あります）</div>
+<div class="pf-pb">現在のお口の状態</div>
+<div style="display:grid;grid-template-columns:${gridCols};gap:3mm;">
+${photoNums.map(n=>`<div class="pf-p">${mkPrintPhSVG(rowId,n,phMaxH)}<div class="pf-pc">${esc((pd.caps||{})[n]||'')||'&nbsp;'}</div></div>`).join('')}
+</div>`:'';
+
+  // 総合評価テーブル
+  const evalTable=`<table class="pf-et">
+  <colgroup><col style="width:12mm;"><col style="width:30mm;"><col><col><col></colgroup>
+  <tr><th rowspan="2" class="tl">総合<br>評価</th><th class="lb">☆歯科診療の必要度</th>${ecM('不要',f.pTE)}${ecM('必要',f.pTE||'必要')}${ecM('緊急',f.pTE)}</tr>
+  <tr><th class="lb">☆口腔ケアの必要度</th>${ecM('不要',f.pCE)}${ecM('必要',f.pCE||'必要')}${ecM('緊急',f.pCE)}</tr>
+</table>`;
+
+  // ── 歯式タイプ：2カラムレイアウト（左：歯式図+凡例、右：診査結果）─────
+  if(rtype==='shashiki'){
+    return `<div class="pf pf-shaform">
+${date?`<div class="pf-dt">${date}</div>`:''}
+<div class="pf-ti">歯　科　健　診　結　果　書</div>
+<div class="pf-pt"><div><strong>施設名：</strong>${facRoom}</div><div><strong>受診者名：</strong>${pat}　様</div></div>
+
+<div class="pf-bx">
+  <div class="pf-bh" style="text-align:center;">【お口の状態（診査結果）】</div>
+  <div class="pf-bd" style="padding:2mm 3mm;">
+    <div class="fac-2col">
+      <div class="fac-2col-l">
+        <div class="pf-shashiki">${chartSVG(d.toothSt,rowId,f)}</div>
+        ${showLegend?legendHtml:''}
+      </div>
+      <div class="fac-2col-r">
+        <div class="fac-sub-h">○ 必要な治療について</div>
+        <div class="fac-sub-bd">${treatItems.join('')}</div>
+        <div class="fac-sub-h">○ 口腔内の状態</div>
+        <div class="fac-sub-bd">${sl.join('')}</div>
+        ${otherLines.length?`<div class="fac-sub-h">○ その他</div><div class="fac-sub-bd">${otherLines.join('')}</div>`:''}
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="pf-bx pf-adv-grow">
+  <div class="pf-bh" style="text-align:center;">【健診結果についてのアドバイス】</div>
+  <div class="pf-bd" style="padding:2mm 4mm;">
+    <div style="margin-bottom:1.5mm;"><strong style="color:#1a3f6f;">● 治療について</strong><br>${advT||'<span style="color:#bbb;">（記載なし）</span>'}</div>
+    <div><strong style="color:#1a3f6f;">● 口腔ケアについて</strong><br>${advC||'<span style="color:#bbb;">（記載なし）</span>'}</div>
+  </div>
+</div>
+
+${evalTable}
+
+<div class="pf-ft">
+  ${drLine}
+  <div class="pf-cl"><strong>${cli||'（医院名）'}</strong><br>TEL　${tel||'―'}</div>
+</div>
+</div>`;
+  }
+
+  // ── 写真タイプ：従来の縦並び ─────
+  return `<div class="pf pf-photo">
+${date?`<div class="pf-dt">${date}</div>`:''}
+<div class="pf-ti">歯　科　健　診　結　果　書</div>
+<div class="pf-pt"><div><strong>施設名：</strong>${facRoom}</div><div><strong>受診者名：</strong>${pat}　様</div></div>
+
+<div class="pf-bx">
+  <div class="pf-bh" style="text-align:center;">【必要な治療について】</div>
+  <div class="pf-bd fac-bd">${treatItems.join('')}</div>
+</div>
+
+<div class="pf-bx">
+  <div class="pf-bh" style="text-align:center;">【お口の状態】</div>
+  <div class="pf-bd fac-bd">${sl.join('')}</div>
+</div>
+
+${otherLines.length?`<div class="pf-bx">
+  <div class="pf-bh" style="text-align:center;">【その他】</div>
+  <div class="pf-bd fac-bd">${otherLines.join('')}</div>
+</div>`:''}
+
+<div class="pf-bx">
+  <div class="pf-bh" style="text-align:center;">【健診結果についてのアドバイス】</div>
+  <div class="pf-bd" style="padding:3mm 4mm;">
+    <div style="margin-bottom:2mm;"><strong style="color:#1a3f6f;">● 治療について</strong><br>${advT||'<span style="color:#bbb;">（記載なし）</span>'}</div>
+    <div><strong style="color:#1a3f6f;">● 口腔ケアについて</strong><br>${advC||'<span style="color:#bbb;">（記載なし）</span>'}</div>
+  </div>
+</div>
+
+${evalTable}
+
+${photoBlock}
+
+<div class="pf-ft">
+  ${drLine}
+  <div class="pf-cl"><strong>${cli||'（医院名）'}</strong><br>TEL　${tel||'―'}</div>
+</div>
+</div>`;
+}
+
+/* ==================== ACTIONS ==================== */
+function generateAll(){
+  if(generateAll._running){return;}
+  generateAll._running=true;
+  setTimeout(()=>generateAll._running=false,1000);
+  const rows=document.querySelectorAll('#tbody tr');
+  if(!rows.length){alert('患者を1名以上追加してください。');return;}
+  const shared={
+    fac:document.getElementById('s-fac').value.trim(),
+    date:document.getElementById('s-date').value.trim(),
+    doc:document.getElementById('s-doc').value.trim(),
+    cli:document.getElementById('s-cli').value.trim(),
+    tel:document.getElementById('s-tel').value.trim(),
+  };
+  const pw=document.getElementById('prev-wrap');
+  let html='';
+  let cnt=0;
+  let skippedCnt=0;
+  rows.forEach(tr=>{
+    // v1.2: プレビュー対象チェック
+    const prevCk=tr.querySelector('input.prev-ck');
+    if(prevCk&&!prevCk.checked){skippedCnt++;return;}
+    const d=getRowData(tr);
+    if(!d.name){return;} // 患者名がない行はスキップ
+    const advTas=tr.querySelectorAll('.adv-custom');
+    d.advT=advTas[0]?advTas[0].value:d.advT;
+    d.advC=advTas[1]?advTas[1].value:d.advC;
+    html+=genForm(d,shared);
+    cnt++;
+  });
+  if(!cnt){
+    if(skippedCnt>0){
+      alert(`プレビュー対象の行がありません。\n（${skippedCnt}行はチェックが外れているためスキップされました）`);
+    }else{
+      alert('患者名が入力された行がありません。');
+    }
+    return;
+  }
+  // prev-placeholderは1回目のpw.innerHTML=htmlで消えるためnullチェック必須
+  const ph=document.getElementById('prev-placeholder');
+  if(ph)ph.style.display='none';
+  pw.innerHTML=html;
+  pw.classList.add('show');
+  document.querySelector('.prev-toggle').textContent=`📄 プレビュー（${cnt}名）を表示 / 非表示`;
+  pw.scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+function togglePreview(){
+  const pw=document.getElementById('prev-wrap');
+  pw.classList.toggle('show');
+}
+
+/* ==================== 施設用 詳細入力モーダル ==================== */
+const facilityData={};// rowId(='row-N') -> 所見データ
+let fndCurrentRowId=null;
+
+function defaultFinding(){
+  return {
+    noProb:false,
+    cv:false, cvN:'', cvM:false,
+    dnU:false, dnUT:'新製', dnUD:false,
+    dnL:false, dnLT:'新製', dnLD:false,
+    perio:false,
+    s1:false,
+    s2:false, s2R:'全体', s2A:'多量',
+    s3:false, s3R:'全体', s3A:'多量',
+    s4:false, s5:false, s6:false, s7:false, s8:false,
+    s9:false, s9A:'多量',
+    oCalc:false, oCalcR:'全体',
+    oDry:false, oOdor:false,
+    oFree:'',
+    pTE:'必要', pCE:'必要'
+  };
+}
+
+function openFindings(btn){
+  const tr=btn.closest('tr');
+  if(!tr)return;
+  fndCurrentRowId=tr.id;
+  if(!facilityData[tr.id])facilityData[tr.id]=defaultFinding();
+  loadFindingsToModal();
+  document.getElementById('fnd-modal').classList.add('open');
+}
+
+function closeFindings(){
+  document.getElementById('fnd-modal').classList.remove('open');
+  fndCurrentRowId=null;
+}
+
+function loadFindingsToModal(){
+  const f=facilityData[fndCurrentRowId]||defaultFinding();
+  const sv=(id,v)=>{const el=document.getElementById(id);if(!el)return;if(el.type==='checkbox')el.checked=!!v;else el.value=(v===undefined||v===null)?'':v;};
+  sv('fnd-noprob',f.noProb);
+  sv('fnd-cv',f.cv); sv('fnd-cvn',f.cvN); sv('fnd-cvm',f.cvM);
+  // 複数本ON時はcvn無効化
+  const cvnEl=document.getElementById('fnd-cvn');
+  if(cvnEl)cvnEl.disabled=!!f.cvM;
+  sv('fnd-dn-u',f.dnU); sv('fnd-dn-u-t',f.dnUT||'新製'); sv('fnd-dn-u-d',f.dnUD);
+  sv('fnd-dn-l',f.dnL); sv('fnd-dn-l-t',f.dnLT||'新製'); sv('fnd-dn-l-d',f.dnLD);
+  sv('fnd-perio',f.perio);
+  sv('fnd-s1',f.s1);
+  sv('fnd-s2',f.s2); sv('fnd-s2r',f.s2R||'全体'); sv('fnd-s2a',f.s2A||'多量');
+  sv('fnd-s3',f.s3); sv('fnd-s3r',f.s3R||'全体'); sv('fnd-s3a',f.s3A||'多量');
+  sv('fnd-s4',f.s4); sv('fnd-s5',f.s5); sv('fnd-s6',f.s6); sv('fnd-s7',f.s7); sv('fnd-s8',f.s8);
+  sv('fnd-s9',f.s9); sv('fnd-s9a',f.s9A||'多量');
+  sv('fnd-o-calc',f.oCalc); sv('fnd-o-calcr',f.oCalcR||'全体');
+  sv('fnd-o-dry',f.oDry); sv('fnd-o-odor',f.oOdor);
+  sv('fnd-o-free',f.oFree||'');
+  // 総合評価ラジオの復元
+  const pteEl=document.querySelector(`input[name="fnd-pte"][value="${f.pTE||'必要'}"]`);
+  const pceEl=document.querySelector(`input[name="fnd-pce"][value="${f.pCE||'必要'}"]`);
+  if(pteEl)pteEl.checked=true;
+  if(pceEl)pceEl.checked=true;
+  updateFndCharCnt();
+}
+
+function saveFindings(){
+  if(!fndCurrentRowId)return;
+  const gv=id=>{const el=document.getElementById(id);if(!el)return '';return el.type==='checkbox'?el.checked:el.value;};
+  facilityData[fndCurrentRowId]={
+    noProb:gv('fnd-noprob'),
+    cv:gv('fnd-cv'), cvN:gv('fnd-cvn'), cvM:gv('fnd-cvm'),
+    dnU:gv('fnd-dn-u'), dnUT:gv('fnd-dn-u-t'), dnUD:gv('fnd-dn-u-d'),
+    dnL:gv('fnd-dn-l'), dnLT:gv('fnd-dn-l-t'), dnLD:gv('fnd-dn-l-d'),
+    perio:gv('fnd-perio'),
+    s1:gv('fnd-s1'),
+    s2:gv('fnd-s2'), s2R:gv('fnd-s2r'), s2A:gv('fnd-s2a'),
+    s3:gv('fnd-s3'), s3R:gv('fnd-s3r'), s3A:gv('fnd-s3a'),
+    s4:gv('fnd-s4'), s5:gv('fnd-s5'), s6:gv('fnd-s6'), s7:gv('fnd-s7'), s8:gv('fnd-s8'),
+    s9:gv('fnd-s9'), s9A:gv('fnd-s9a'),
+    oCalc:gv('fnd-o-calc'), oCalcR:gv('fnd-o-calcr'),
+    oDry:gv('fnd-o-dry'), oOdor:gv('fnd-o-odor'),
+    oFree:(gv('fnd-o-free')||'').slice(0,50),
+    pTE:(document.querySelector('input[name="fnd-pte"]:checked')?.value)||'必要',
+    pCE:(document.querySelector('input[name="fnd-pce"]:checked')?.value)||'必要'
+  };
+  updateFindingsSummary(fndCurrentRowId);
+  closeFindings();
+}
+
+function clearFindingsModal(){
+  if(!confirm('このモーダル内の入力をすべてクリアしますか？'))return;
+  facilityData[fndCurrentRowId]=defaultFinding();
+  loadFindingsToModal();
+}
+
+function onFndCvm(){
+  const cvm=document.getElementById('fnd-cvm');
+  const cvn=document.getElementById('fnd-cvn');
+  const cv=document.getElementById('fnd-cv');
+  if(!cvm||!cvn||!cv)return;
+  if(cvm.checked){cvn.value='';cvn.disabled=true;cv.checked=true;}
+  else{cvn.disabled=false;}
+}
+
+function onFndFreeInput(){
+  const ta=document.getElementById('fnd-o-free');
+  if(!ta)return;
+  // 50字を超えたら切り詰め
+  if(ta.value.length>50)ta.value=ta.value.slice(0,50);
+  updateFndCharCnt();
+}
+
+function setAllStatesOn(){
+  ['fnd-s1','fnd-s2','fnd-s3','fnd-s4','fnd-s5','fnd-s6','fnd-s7','fnd-s8','fnd-s9'].forEach(id=>{
+    const el=document.getElementById(id);if(el)el.checked=true;
+  });
+}
+function setAllStatesOff(){
+  ['fnd-s1','fnd-s2','fnd-s3','fnd-s4','fnd-s5','fnd-s6','fnd-s7','fnd-s8','fnd-s9'].forEach(id=>{
+    const el=document.getElementById(id);if(el)el.checked=false;
+  });
+}
+function updateFndCharCnt(){
+  const ta=document.getElementById('fnd-o-free');
+  const cnt=document.getElementById('fnd-o-free-cnt');
+  if(!ta||!cnt)return;
+  const n=ta.value.length;
+  cnt.textContent=`${n}/50`;
+  cnt.classList.toggle('over',n>=50);
+}
+
+function updateFindingsSummary(rowId){
+  const tr=document.getElementById(rowId);
+  if(!tr)return;
+  const sumEl=tr.querySelector('.findings-summary');
+  if(!sumEl)return;
+  const f=facilityData[rowId];
+  if(!f){sumEl.textContent='';sumEl.style.color='#aaa';return;}
+  // 治療系・口腔状態の問題件数をカウント
+  let txt=[];
+  let problems=0;
+  if(f.cv)problems++;
+  if(f.dnU)problems++;
+  if(f.dnL)problems++;
+  if(f.perio)problems++;
+  if(problems>0)txt.push(`治療${problems}項目`);
+  let sCnt=0;
+  ['s1','s2','s3','s4','s5','s6','s7','s8','s9'].forEach(k=>{if(f[k])sCnt++;});
+  if(sCnt>0)txt.push(`状態問題${sCnt}件`);
+  let oCnt=0;
+  if(f.oCalc)oCnt++;
+  if(f.oDry)oCnt++;
+  if(f.oOdor)oCnt++;
+  if((f.oFree||'').trim())oCnt++;
+  if(oCnt>0)txt.push(`その他${oCnt}件`);
+  if(f.noProb&&problems===0&&sCnt===0&&oCnt===0)txt.push('問題なし');
+  if(txt.length===0){sumEl.textContent='未入力';sumEl.style.color='#aaa';}
+  else{sumEl.textContent=txt.join('・');sumEl.style.color=(problems>0||sCnt>0)?'#c0392b':'#1a3f6f';sumEl.style.fontWeight='600';}
+}
+
+function clearAll(){
+  if(!confirm('すべての入力をクリアしますか？'))return;
+  document.getElementById('tbody').innerHTML='';
+  document.getElementById('prev-wrap').innerHTML='<div style="width:100%;text-align:center;color:#666;font-size:13px;padding:20px;" id="prev-placeholder">「一括プレビュー生成」ボタンを押すと、ここに全員分の結果書が表示されます</div>';
+  document.getElementById('prev-wrap').classList.remove('show');
+  // 施設用：所見データもリセット
+  if(typeof facilityData!=='undefined'){Object.keys(facilityData).forEach(k=>delete facilityData[k]);}
+  // 写真・アノテーションのオブジェクトもリセット（メモリリーク防止）
+  if(typeof patientPhotos!=='undefined'){Object.keys(patientPhotos).forEach(k=>delete patientPhotos[k]);}
+  if(typeof patientAnnos!=='undefined'){Object.keys(patientAnnos).forEach(k=>delete patientAnnos[k]);}
+  // 削除Undoバッファもクリア
+  if(typeof undoStack!=='undefined'&&Array.isArray(undoStack)){undoStack.length=0;const ub=document.getElementById('undo-btn');if(ub){ub.disabled=true;ub.style.opacity='.4';}}
+  updateNums();
+}
+
+function setToday(){
+  const n=new Date();
+  document.getElementById('s-date').value=`令和${n.getFullYear()-2018}年${n.getMonth()+1}月${n.getDate()}日`;
+}
+
+
+
+/* ==================== 写真記録システム ==================== */
+const patientPhotos={};// rowId→{ph:{1-4:null},dims:{1-4},annos:{1-4:[]},caps:{1-4:''}}
+let mpActivePhoto=1, mpIsAnno=false, mpSym='circle', mpCol='#e74c3c', mpAidCtr=0;
+let mpCurrentRowId=null;
+
+function initPPh(id){
+  if(!patientPhotos[id])
+    patientPhotos[id]={
+      ph:{1:null,2:null,3:null,4:null},
+      dims:{1:{w:1200,h:900},2:{w:1200,h:900},3:{w:1200,h:900},4:{w:1200,h:900}},
+      annos:{1:[],2:[],3:[],4:[]},
+      caps:{1:'',2:'',3:'',4:''},
+      fileNames:{1:'',2:'',3:'',4:''}
+    };
+}
+
+// タブ切替
+function setMTab(tab){
+  document.getElementById('tc-chart-area').style.display=tab==='chart'?'':'none';
+  document.getElementById('tc-photo-area').style.display=tab==='photo'?'':'none';
+  document.getElementById('tc-tab-chart').classList.toggle('active',tab==='chart');
+  document.getElementById('tc-tab-photo').classList.toggle('active',tab==='photo');
+  if(tab==='photo'){setMPhActive(mpActivePhoto);loadMFindings();}
+  if(tab==='chart'){saveMFindings();}
+}
+
+// 写真選択
+function setMPhActive(n){
+  mpActivePhoto=n;
+  exitCropMode();
+  [1,2,3,4].forEach(i=>{
+    document.getElementById('mp-th-'+i).classList.toggle('active',i===n);
+  });
+  renderMPh();
+  const d=patientPhotos[mpCurrentRowId]||{};
+  const cap=(d.caps||{})[n]||'';
+  document.getElementById('mp-cap').value=cap;
+  updateMpDelBtn();
+}
+
+// 写真ロード
+function delMPhoto(){
+  if(!mpCurrentRowId)return;
+  const d=patientPhotos[mpCurrentRowId];
+  if(!d||!d.ph[mpActivePhoto]){alert('現在のスロットに写真はありません。');return;}
+  if(!confirm(`写真${mpActivePhoto}を削除しますか？\n（コメントは残ります）`))return;
+  d.ph[mpActivePhoto]=null;
+  d.annos[mpActivePhoto]=[];
+  if(d.fileNames)d.fileNames[mpActivePhoto]='';// v1.2
+  const fi=document.getElementById('mp-file');if(fi)fi.value='';
+  updateThumb(mpActivePhoto);
+  renderMPh();
+  updateMpDelBtn();
+}
+function updateMpDelBtn(){
+  const btn=document.getElementById('mp-del-btn');
+  if(!btn)return;
+  const d=patientPhotos[mpCurrentRowId]||{};
+  const has=!!(d.ph&&d.ph[mpActivePhoto]);
+  btn.style.display=has?'':'none';
+}
+function loadMPhoto(){
+  const f=document.getElementById('mp-file').files[0];
+  if(!f||!mpCurrentRowId)return;
+  const fileName=f.name||'';
+  // v1.3: 他患者で同名画像が使われていないかチェック
+  if(fileName){
+    let conflict=null;
+    Object.keys(patientPhotos).forEach(rid=>{
+      if(rid===mpCurrentRowId)return;
+      const fn=patientPhotos[rid]?.fileNames||{};
+      [1,2,3,4].forEach(n=>{
+        if(fn[n]===fileName&&patientPhotos[rid].ph&&patientPhotos[rid].ph[n]){
+          conflict={rid:rid,slot:n};
+        }
+      });
+    });
+    if(conflict){
+      const trC=document.getElementById(conflict.rid);
+      const pname=trC?(trC.querySelector('.pname')?.value.trim()||'名前未設定'):'名前未設定';
+      alert(`「${fileName}」は既に「${pname}」さんの写真${conflict.slot}で使用されています。\n他の患者と同じ名称の画像は選択できません。\n別のファイルを選択してください。`);
+      document.getElementById('mp-file').value='';
+      return;
+    }
+  }
+  initPPh(mpCurrentRowId);
+  // v1.2: ファイル名を保存
+  const r=new FileReader();
+  r.onload=e=>{
+    const img=new Image();
+    img.onload=()=>{
+      const n=mpActivePhoto;
+      patientPhotos[mpCurrentRowId].dims[n]={w:img.naturalWidth,h:img.naturalHeight};
+      patientPhotos[mpCurrentRowId].ph[n]=e.target.result;
+      // ファイル名は後方互換のため fileNames プロパティが無い場合は作成
+      if(!patientPhotos[mpCurrentRowId].fileNames)patientPhotos[mpCurrentRowId].fileNames={1:'',2:'',3:'',4:''};
+      patientPhotos[mpCurrentRowId].fileNames[n]=fileName;
+      renderMPh();
+      updateThumb(n);
+      updateMpDelBtn();
+    };
+    img.src=e.target.result;
+  };
+  r.readAsDataURL(f);
+}
+
+// サムネイル更新
+function updateThumb(n){
+  const th=document.getElementById('mp-th-'+n);
+  const d=patientPhotos[mpCurrentRowId];
+  if(!th||!d)return;
+  const img=d.ph[n];
+  th.innerHTML=img?`<img src="${img}" style="width:100%;height:100%;object-fit:cover;">`:`<span>写真${n}</span>`;
+}
+
+// キャプション保存
+function saveMCap(){
+  if(!mpCurrentRowId)return;
+  initPPh(mpCurrentRowId);
+  patientPhotos[mpCurrentRowId].caps[mpActivePhoto]=document.getElementById('mp-cap').value;
+}
+
+// 書き込みモード切替
+function toggleMAnno(){
+  mpIsAnno=!mpIsAnno;
+  exitCropMode();
+  const btn=document.getElementById('mp-anno-btn');
+  btn.classList.toggle('mp-anno-on',mpIsAnno);
+  btn.textContent=mpIsAnno?'🔴 書き込み中':'✏️ 書き込みモード';
+  document.getElementById('mp-tools-area').style.display=mpIsAnno?'block':'none';
+  document.getElementById('mp-svg-wrap').classList.toggle('anno',mpIsAnno);
+  // 書き込みモードON時にデフォルトのactive状態を設定
+  if(mpIsAnno){
+    document.querySelectorAll('.mp-tool[data-t]').forEach(b=>{
+      b.classList.toggle('active', b.getAttribute('data-t')===mpSym);
+    });
+    document.querySelectorAll('.mp-dot').forEach(d=>{
+      const bg=(d.getAttribute('style')||'').match(/background:([^;]+)/);
+      d.classList.toggle('active', bg&&bg[1].trim().toLowerCase()===(mpCol||'').toLowerCase());
+    });
+  }
+  renderMPh();
+}
+
+function setMPhSym(s,el){
+  mpSym=s;
+  document.querySelectorAll('.mp-tool[data-t]').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+}
+function setMPhCol(c,el){
+  mpCol=c;
+  document.querySelectorAll('.mp-dot').forEach(d=>d.classList.remove('active'));
+  el.classList.add('active');
+}
+/* 写真① 写真上の文字注釈のドラッグ移動／クリックで再編集 */
+let _mpTextDrag=null;
+function startMpTextDrag(e,n,aid){
+  e.stopPropagation();
+  if(!mpCurrentRowId||!patientPhotos[mpCurrentRowId])return;
+  const arr=(patientPhotos[mpCurrentRowId].annos||{})[n]||[];
+  if(mpIsAnno&&mpSym==='eraser'){
+    const i=arr.findIndex(o=>o.id===aid);
+    if(i>=0){arr.splice(i,1);renderMPh();}
+    return;
+  }
+  e.preventDefault();
+  _mpTextDrag={n:n,aid:aid,moved:false};
+  document.addEventListener('mousemove',onMpTextDragMove);
+  document.addEventListener('mouseup',onMpTextDragEnd);
+}
+function onMpTextDragMove(e){
+  if(!_mpTextDrag)return;
+  const svg=document.getElementById('mp-svg-'+_mpTextDrag.n);
+  if(!svg)return;
+  const r=svg.getBoundingClientRect();
+  const vb=svg.viewBox.baseVal;
+  const x=(e.clientX-r.left)*vb.width/r.width;
+  const y=(e.clientY-r.top)*vb.height/r.height;
+  const arr=(patientPhotos[mpCurrentRowId].annos||{})[_mpTextDrag.n]||[];
+  const a=arr.find(o=>o.id===_mpTextDrag.aid);
+  if(a){
+    a.x=Math.max(0,Math.min(vb.width,x));
+    a.y=Math.max(0,Math.min(vb.height,y));
+    _mpTextDrag.moved=true;
+    renderMPh();
+  }
+}
+function onMpTextDragEnd(e){
+  if(_mpTextDrag&&!_mpTextDrag.moved){
+    const arr=(patientPhotos[mpCurrentRowId].annos||{})[_mpTextDrag.n]||[];
+    const a=arr.find(o=>o.id===_mpTextDrag.aid);
+    if(a){
+      const nv=prompt('文字を編集（空欄で削除）：',a.txt||'');
+      if(nv!==null){
+        if(nv===''){const i=arr.indexOf(a);if(i>=0)arr.splice(i,1);}
+        else a.txt=nv;
+        renderMPh();
+      }
+    }
+  }
+  _mpTextDrag=null;
+  document.removeEventListener('mousemove',onMpTextDragMove);
+  document.removeEventListener('mouseup',onMpTextDragEnd);
+}
+
+/* 写真① 写真のトリミング（切り取り） */
+let mpCropMode=false, mpCrop=null, _cropDrag=null;
+function exitCropMode(){
+  mpCropMode=false; mpCrop=null;
+  const b=document.getElementById('mp-crop-btn');
+  if(b){b.classList.remove('mp-anno-on');b.textContent='✂ トリミング';}
+  const a=document.getElementById('mp-crop-apply');
+  if(a)a.style.display='none';
+}
+function toggleCrop(){
+  if(!mpCurrentRowId)return;
+  const d=patientPhotos[mpCurrentRowId]||{};
+  if(!d.ph||!d.ph[mpActivePhoto]){alert('トリミングする写真がありません。先に写真を選択してください。');return;}
+  if(mpCropMode){ exitCropMode(); renderMPh(); return; }
+  // 書き込みモードを解除
+  if(mpIsAnno){
+    mpIsAnno=false;
+    const ab=document.getElementById('mp-anno-btn');
+    if(ab){ab.classList.remove('mp-anno-on');ab.textContent='✏️ 書き込みモード';}
+    const ta=document.getElementById('mp-tools-area');
+    if(ta)ta.style.display='none';
+  }
+  const dim=(d.dims||{})[mpActivePhoto]||{w:1200,h:900};
+  mpCrop={x:dim.w*0.08,y:dim.h*0.08,w:dim.w*0.84,h:dim.h*0.84};
+  mpCropMode=true;
+  const b=document.getElementById('mp-crop-btn');
+  if(b){b.classList.add('mp-anno-on');b.textContent='✂ トリミング中';}
+  const a=document.getElementById('mp-crop-apply');
+  if(a)a.style.display='';
+  renderMPh();
+}
+function startCropDrag(e,mode){
+  e.stopPropagation(); e.preventDefault();
+  if(!mpCrop)return;
+  _cropDrag={mode:mode, sx:e.clientX, sy:e.clientY, orig:{x:mpCrop.x,y:mpCrop.y,w:mpCrop.w,h:mpCrop.h}};
+  document.addEventListener('mousemove',onCropDragMove);
+  document.addEventListener('mouseup',onCropDragEnd);
+}
+function onCropDragMove(e){
+  if(!_cropDrag||!mpCrop)return;
+  const svg=document.getElementById('mp-svg-'+mpActivePhoto);
+  if(!svg)return;
+  const r=svg.getBoundingClientRect();
+  const vb=svg.viewBox.baseVal;
+  const dx=(e.clientX-_cropDrag.sx)*vb.width/r.width;
+  const dy=(e.clientY-_cropDrag.sy)*vb.height/r.height;
+  const o=_cropDrag.orig, W=vb.width, H=vb.height;
+  const MIN=Math.min(W,H)*0.08;
+  const m=_cropDrag.mode;
+  let x,y,w,h;
+  if(m==='move'){
+    x=Math.max(0,Math.min(W-o.w,o.x+dx));
+    y=Math.max(0,Math.min(H-o.h,o.y+dy));
+    w=o.w; h=o.h;
+  }else{
+    let x1=o.x, y1=o.y, x2=o.x+o.w, y2=o.y+o.h;
+    if(m==='nw'){x1=o.x+dx; y1=o.y+dy;}
+    if(m==='ne'){x2=o.x+o.w+dx; y1=o.y+dy;}
+    if(m==='sw'){x1=o.x+dx; y2=o.y+o.h+dy;}
+    if(m==='se'){x2=o.x+o.w+dx; y2=o.y+o.h+dy;}
+    x1=Math.max(0,Math.min(x1,x2-MIN));
+    y1=Math.max(0,Math.min(y1,y2-MIN));
+    x2=Math.min(W,Math.max(x2,x1+MIN));
+    y2=Math.min(H,Math.max(y2,y1+MIN));
+    x=x1; y=y1; w=x2-x1; h=y2-y1;
+  }
+  mpCrop={x:x,y:y,w:w,h:h};
+  renderMPh();
+}
+function onCropDragEnd(){
+  _cropDrag=null;
+  document.removeEventListener('mousemove',onCropDragMove);
+  document.removeEventListener('mouseup',onCropDragEnd);
+}
+function applyCrop(){
+  if(!mpCropMode||!mpCrop||!mpCurrentRowId)return;
+  const d=patientPhotos[mpCurrentRowId];
+  const n=mpActivePhoto;
+  const src=d&&d.ph&&d.ph[n];
+  if(!src){ exitCropMode(); renderMPh(); return; }
+  const c={x:Math.round(mpCrop.x),y:Math.round(mpCrop.y),w:Math.round(mpCrop.w),h:Math.round(mpCrop.h)};
+  if(c.w<2||c.h<2)return;
+  const img=new Image();
+  img.onload=()=>{
+    const cv=document.createElement('canvas');
+    cv.width=c.w; cv.height=c.h;
+    const ctx=cv.getContext('2d');
+    ctx.fillStyle='#ffffff'; ctx.fillRect(0,0,c.w,c.h);
+    ctx.drawImage(img,c.x,c.y,c.w,c.h,0,0,c.w,c.h);
+    let url;
+    try{ url=cv.toDataURL('image/jpeg',0.9); }catch(e){ url=cv.toDataURL(); }
+    d.ph[n]=url;
+    if(!d.dims)d.dims={};
+    d.dims[n]={w:c.w,h:c.h};
+    // 注釈の座標をトリミングに合わせて移動（範囲外は除外）
+    const arr=(d.annos&&d.annos[n])||[];
+    d.annos[n]=arr.map(a=>Object.assign({},a,{x:a.x-c.x,y:a.y-c.y}))
+                  .filter(a=>a.x>=0&&a.x<=c.w&&a.y>=0&&a.y<=c.h);
+    exitCropMode();
+    renderMPh();
+    if(typeof updateThumb==='function')updateThumb(n);
+  };
+  img.onerror=()=>{ exitCropMode(); renderMPh(); };
+  img.src=src;
+}
+
+// SVG描画
+function mPhAsvg(a,W,H){
+  const{s,x,y,c,txt}=a;
+  const sc=Math.min(W,H)/800;
+  const r=38*sc,sw=7*sc,fs=50*sc;
+  const es2=t=>String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  switch(s){
+    case 'circle':   return `<circle cx="${x}" cy="${y}" r="${r}" fill="none" stroke="${c}" stroke-width="${sw}"/>`;
+    case 'circle_f': return `<circle cx="${x}" cy="${y}" r="${r*.7}" fill="${c}" opacity=".65"/>`;
+    case 'circle_lg':return `<circle cx="${x}" cy="${y}" r="${r*1.9}" fill="none" stroke="${c}" stroke-width="${sw}"/>`;
+    case 'cross':    return `<g transform="translate(${x},${y})"><line x1="${-r}" y1="${-r}" x2="${r}" y2="${r}" stroke="${c}" stroke-width="${sw}"/><line x1="${r}" y1="${-r}" x2="${-r}" y2="${r}" stroke="${c}" stroke-width="${sw}"/></g>`;
+    case 'arrow_r':  return `<text x="${x}" y="${y+fs*.35}" font-size="${fs*1.4}" text-anchor="middle" fill="${c}">→</text>`;
+    case 'arrow_l':  return `<text x="${x}" y="${y+fs*.35}" font-size="${fs*1.4}" text-anchor="middle" fill="${c}">←</text>`;
+    case 'arrow_d':  return `<text x="${x}" y="${y+fs*.35}" font-size="${fs*1.4}" text-anchor="middle" fill="${c}">↓</text>`;
+    case 'arrow_u':  return `<text x="${x}" y="${y+fs*.35}" font-size="${fs*1.4}" text-anchor="middle" fill="${c}">↑</text>`;
+    case 'text':     return `<text x="${x}" y="${y}" font-size="${fs}" text-anchor="middle" fill="${c}" font-weight="bold" font-family="sans-serif">${es2(txt||'')}</text>`;
+    default:return '';
+  }
+}
+
+function mkMPhSVG(n,forPrint=false){
+  if(!mpCurrentRowId)return '';
+  const d=patientPhotos[mpCurrentRowId]||{};
+  const img=(d.ph||{})[n];
+  const dim=(d.dims||{})[n]||{w:1200,h:900};
+  const {w,h}=dim;
+  const annList=(d.annos||{})[n]||[];
+  const p=[];
+  if(img){
+    p.push(`<image href="${img}" x="0" y="0" width="${w}" height="${h}" preserveAspectRatio="xMidYMid meet"/>`);
+  }else{
+    p.push(`<rect width="${w}" height="${h}" fill="#f8f8f8"/>`);
+    p.push(`<text x="${w/2}" y="${h/2}" text-anchor="middle" dominant-baseline="middle" font-size="${w*.035}" fill="#ccc" font-family="sans-serif">写真${n}</text>`);
+  }
+  annList.forEach(a=>p.push(mPhAsvg(a,w,h)));
+  if(!forPrint){
+    const _sc=Math.min(w,h)/800;
+    if(mpCropMode&&mpCrop&&n===mpActivePhoto){
+      // 写真① トリミングUI（暗いマスク＋切り取り枠＋四隅ハンドル）
+      const c=mpCrop;
+      p.push(`<rect x="0" y="0" width="${w}" height="${Math.max(0,c.y)}" fill="rgba(0,0,0,.5)"/>`);
+      p.push(`<rect x="0" y="${c.y+c.h}" width="${w}" height="${Math.max(0,h-c.y-c.h)}" fill="rgba(0,0,0,.5)"/>`);
+      p.push(`<rect x="0" y="${c.y}" width="${Math.max(0,c.x)}" height="${c.h}" fill="rgba(0,0,0,.5)"/>`);
+      p.push(`<rect x="${c.x+c.w}" y="${c.y}" width="${Math.max(0,w-c.x-c.w)}" height="${c.h}" fill="rgba(0,0,0,.5)"/>`);
+      p.push(`<rect x="${c.x}" y="${c.y}" width="${c.w}" height="${c.h}" fill="rgba(255,255,255,0.01)" stroke="#27ae60" stroke-width="${3*_sc}" stroke-dasharray="${9*_sc},${6*_sc}" style="cursor:move;" onmousedown="startCropDrag(event,'move')"/>`);
+      const hs=Math.max(w,h)*0.05;
+      const corners=[['nw',c.x,c.y,'nwse-resize'],['ne',c.x+c.w,c.y,'nesw-resize'],['sw',c.x,c.y+c.h,'nesw-resize'],['se',c.x+c.w,c.y+c.h,'nwse-resize']];
+      corners.forEach(k=>{
+        p.push(`<rect x="${k[1]-hs/2}" y="${k[2]-hs/2}" width="${hs}" height="${hs}" fill="#27ae60" stroke="#ffffff" stroke-width="${2.2*_sc}" style="cursor:${k[3]};" onmousedown="startCropDrag(event,'${k[0]}')"/>`);
+      });
+    }else{
+      const cur=mpSym==='eraser'?'cell':'crosshair';
+      p.push(`<rect id="mp-ov-${n}" x="0" y="0" width="${w}" height="${h}" fill="${mpIsAnno?'rgba(0,0,0,.01)':'transparent'}" style="cursor:${mpIsAnno?cur:'default'};" onclick="handleMPhClick(event,${n})"/>`);
+      // 写真① 文字注釈のドラッグ用ハンドル（オーバーレイより上）
+      const _fs=50*_sc;
+      annList.forEach(a=>{
+        if(a.s==='text'){
+          p.push(`<rect class="mp-text-handle" x="${a.x-_fs*1.7}" y="${a.y-_fs*0.85}" width="${_fs*3.4}" height="${_fs*1.5}" rx="${4*_sc}" fill="rgba(0,80,180,0.07)" stroke="rgba(0,80,180,0.45)" stroke-width="${2.4*_sc}" stroke-dasharray="${5*_sc},${4*_sc}" style="cursor:move;" onmousedown="startMpTextDrag(event,${n},'${a.id}')"/>`);
+        }
+      });
+    }
+  }
+  return `<svg id="mp-svg-${n}" viewBox="0 0 ${w} ${h}" style="width:100%;display:block;" preserveAspectRatio="xMidYMid meet">${p.join('')}</svg>`;
+}
+
+function renderMPh(){
+  const wrap=document.getElementById('mp-svg-wrap');
+  if(!wrap)return;
+  wrap.innerHTML=mkMPhSVG(mpActivePhoto,false);
+}
+
+// クリックハンドラ
+function handleMPhClick(e,n){
+  if(!mpIsAnno||!mpCurrentRowId)return;
+  e.stopPropagation();
+  const svg=document.getElementById('mp-svg-'+n)||e.currentTarget.closest('svg');
+  if(!svg)return;
+  const r=svg.getBoundingClientRect();
+  const vb=svg.viewBox.baseVal;
+  const x=(e.clientX-r.left)*vb.width/r.width;
+  const y=(e.clientY-r.top)*vb.height/r.height;
+  const dim=(patientPhotos[mpCurrentRowId].dims||{})[n]||{w:1200,h:900};
+  if(mpSym==='eraser'){
+    const thr=Math.min(dim.w,dim.h)*.06;
+    const arr=patientPhotos[mpCurrentRowId].annos[n];
+    let mi=-1,md=Infinity;
+    arr.forEach((a,i)=>{const dist=Math.hypot(a.x-x,a.y-y);if(dist<md){md=dist;mi=i;}});
+    if(mi>=0&&md<thr){arr.splice(mi,1);renderMPh();}
+    return;
+  }
+  if(mpSym==='text'){
+    const txt=prompt('表示する文字を入力してください：','');
+    if(txt===null||txt==='')return;
+    patientPhotos[mpCurrentRowId].annos[n].push({id:'mp'+(mpAidCtr++),s:'text',x,y,c:mpCol,txt:txt});
+    renderMPh();
+    return;
+  }
+  patientPhotos[mpCurrentRowId].annos[n].push({id:'mp'+(mpAidCtr++),s:mpSym,x,y,c:mpCol});
+  renderMPh();
+}
+
+
+/* ── 写真タイプ所見の保存・復元 ── */
+function saveMFindings(){
+  if(!mpCurrentRowId)return;
+  initPPh(mpCurrentRowId);
+  const d=patientPhotos[mpCurrentRowId];
+  const gv2=id=>document.getElementById(id);
+  const gr2=n=>{const el=document.querySelector(`input[name="${n}"]:checked`);return el?el.value:'';};
+  d.findings={
+    pCv:gv2('mp-f-cv')?.checked||false, pCvN:gv2('mp-f-cvn')?.value||'', pCvM:gv2('mp-f-cvm')?.checked||false,
+    pCl:gv2('mp-f-cl')?.checked||false, pClR:gv2('mp-f-clr')?.value||'全体', pClL:gv2('mp-f-cll')?.value||'多量',
+    pDnU:gv2('mp-f-dn-u')?.checked||false, pDTU:gv2('mp-f-dtu')?.value||'新調', pDnUdiff:gv2('mp-f-dn-u-diff')?.checked||false,
+    pDnL:gv2('mp-f-dn-l')?.checked||false, pDTL:gv2('mp-f-dtl')?.value||'新調', pDnLdiff:gv2('mp-f-dn-l-diff')?.checked||false,
+    pPl:gv2('mp-f-pl')?.checked||false, pPlR:gv2('mp-f-plr')?.value||'全体', pPlL:gv2('mp-f-pll')?.value||'多量',
+    pFd:gv2('mp-f-fd')?.checked||false, pFdL:gv2('mp-f-fdl')?.value||'多量',
+    pPe:gv2('mp-f-pe')?.checked||false, pPeR:gv2('mp-f-per')?.value||'全体', pPeL:gv2('mp-f-pel')?.value||'軽度',
+    pTg:gv2('mp-f-tg')?.checked||false, pTgL:gv2('mp-f-tgl')?.value||'多量',
+    pDr:gv2('mp-f-dr')?.checked||false, pDrL:gv2('mp-f-drl')?.value||'低度',
+    pTE:gr2('mp-pte')||'必要', pCE:gr2('mp-pce')||'必要',
+  };
+}
+function onMpCvm(){
+  const cvm=document.getElementById('mp-f-cvm');
+  const cvn=document.getElementById('mp-f-cvn');
+  const cv=document.getElementById('mp-f-cv');
+  if(!cvm||!cvn||!cv)return;
+  if(cvm.checked){
+    cvn.value='';
+    cvn.disabled=true;
+    cv.checked=true;
+  }else{
+    cvn.disabled=false;
+  }
+  saveMFindings();
+}
+function loadMFindings(){
+  const d=patientPhotos[mpCurrentRowId]||{};
+  const f=d.findings||{};
+  const sv2=(id,v)=>{const el=document.getElementById(id);if(el){if(el.type==='checkbox')el.checked=!!v;else el.value=v||'';}};
+  sv2('mp-f-cv',f.pCv); sv2('mp-f-cvn',f.pCvN); sv2('mp-f-cvm',f.pCvM);
+  // disabled連動
+  const _cvnEl=document.getElementById('mp-f-cvn');if(_cvnEl)_cvnEl.disabled=!!f.pCvM;
+  sv2('mp-f-cl',f.pCl); sv2('mp-f-clr',f.pClR||'全体'); sv2('mp-f-cll',f.pClL||'多量');
+  sv2('mp-f-dn-u',f.pDnU); sv2('mp-f-dtu',f.pDTU||'新調'); sv2('mp-f-dn-u-diff',f.pDnUdiff||false);
+  sv2('mp-f-dn-l',f.pDnL); sv2('mp-f-dtl',f.pDTL||'新調'); sv2('mp-f-dn-l-diff',f.pDnLdiff||false);
+  sv2('mp-f-pl',f.pPl); sv2('mp-f-plr',f.pPlR||'全体'); sv2('mp-f-pll',f.pPlL||'多量');
+  sv2('mp-f-fd',f.pFd); sv2('mp-f-fdl',f.pFdL||'多量');
+  sv2('mp-f-pe',f.pPe); sv2('mp-f-per',f.pPeR||'全体'); sv2('mp-f-pel',f.pPeL||'軽度');
+  sv2('mp-f-tg',f.pTg); sv2('mp-f-tgl',f.pTgL||'多量');
+  sv2('mp-f-dr',f.pDr); sv2('mp-f-drl',f.pDrL||'低度');
+  const pteEl=document.querySelector(`input[name="mp-pte"][value="${f.pTE||'必要'}"]`);
+  const pceEl=document.querySelector(`input[name="mp-pce"][value="${f.pCE||'必要'}"]`);
+  if(pteEl)pteEl.checked=true;
+  if(pceEl)pceEl.checked=true;
+}
+
+/* v1.1: 歯式図C1-C4 → 治療必要本数の自動連携 */
+function autoCountCavitiesFromChart(){
+  if(!mpCurrentRowId)return;
+  const cnt=Object.values(tcSt||{}).filter(v=>['C1','C2','C3','C4'].includes(v)).length;
+  if(!facilityData[mpCurrentRowId])facilityData[mpCurrentRowId]=defaultFinding();
+  if(facilityData[mpCurrentRowId].cvM)return;// 複数本ON中は上書きしない
+  if(cnt>0){
+    facilityData[mpCurrentRowId].cv=true;
+    facilityData[mpCurrentRowId].cvN=String(cnt);
+    updateFindingsSummary(mpCurrentRowId);
+  }
+}
+
+
+
+/* ── 記録モーダル内 入れ歯処置 ── */
+function saveMDenture(){
+  if(!mpCurrentRowId)return;
+  initPPh(mpCurrentRowId);
+  const d=patientPhotos[mpCurrentRowId];
+  d.denture={
+    u_on:document.getElementById('tc-dn-u')?.checked||false,
+    u_type:document.getElementById('tc-dtu')?.value||'新調',
+    u_diff:document.getElementById('tc-dn-u-diff')?.checked||false,
+    l_on:document.getElementById('tc-dn-l')?.checked||false,
+    l_type:document.getElementById('tc-dtl')?.value||'新調',
+    l_diff:document.getElementById('tc-dn-l-diff')?.checked||false,
+  };
+}
+function loadMDenture(){
+  const d=patientPhotos[mpCurrentRowId]||{};
+  const v=d.denture||{};
+  const sv=(id,val)=>{const el=document.getElementById(id);if(el){if(typeof val==='boolean')el.checked=val;else el.value=val;}};
+  sv('tc-dn-u',v.u_on||false); sv('tc-dtu',v.u_type||'新調'); sv('tc-dn-u-diff',v.u_diff||false);
+  sv('tc-dn-l',v.l_on||false); sv('tc-dtl',v.l_type||'新調'); sv('tc-dn-l-diff',v.l_diff||false);
+}
+
+function clearTcAnnos(){
+  const rid=tcCurrentBtn?.closest('tr')?.id||mpCurrentRowId||'';
+  if(rid&&patientAnnos[rid])patientAnnos[rid]=[];
+  renderTcModal();
+}
+function clearMPhAnno(){
+  if(!mpCurrentRowId)return;
+  const n=mpActivePhoto;
+  patientPhotos[mpCurrentRowId].annos[n]=[];
+  renderMPh();
+}
+
+function openChart(btn){
+  const tr=btn.closest('tr');
+  mpCurrentRowId=tr?tr.id:'';
+  initPPh(mpCurrentRowId);
+  mpIsAnno=false;
+  mpActivePhoto=1;
+  setMTab('chart');
+  openChartBase(btn);
+  loadMDenture();
+  // サムネイル更新
+  [1,2,3,4].forEach(n=>updateThumb(n));
+}
+
+// saveChart → saveRecord に統合
+const _origSaveChart=saveChart;
+function saveRecord(){
+  saveMFindings();
+  saveMDenture();
+  // v1.1: 歯式図のC1-C4を自動カウントして詳細入力データに反映
+  autoCountCavitiesFromChart();
+  tcCurrentBtn.dataset.st=JSON.stringify(tcSt);
+  tcCurrentBtn.dataset.sub2=JSON.stringify(sub2St);
+  const hasTeeth=Object.keys(tcSt).length>0;
+  // 写真有無チェック
+  const d=patientPhotos[mpCurrentRowId]||{};
+  const hasPhoto=[1,2,3,4].some(n=>d.ph[n]);
+  const total=Object.keys(tcSt).length+([1,2,3,4].filter(n=>d.ph[n]).length);
+  tcCurrentBtn.classList.toggle('has-data',total>0);
+  const labels=[];
+  if(hasTeeth)labels.push(`歯式(${Object.keys(tcSt).length})`);
+  if(hasPhoto)labels.push(`写真(${[1,2,3,4].filter(n=>d.ph[n]).length}枚)`);
+  tcCurrentBtn.textContent=labels.length?labels.join('・'):'記録';
+  closeChart();
+}
+
+// genForm用：写真SVG（印刷用）
+function mkPrintPhSVG(rowId,n,maxH){
+  const saved=mpCurrentRowId;
+  mpCurrentRowId=rowId;
+  const d=patientPhotos[rowId]||{};
+  const img=(d.ph||{})[n];
+  const dim=(d.dims||{})[n]||{w:1200,h:900};
+  const {w,h}=dim;
+  const annList=(d.annos||{})[n]||[];
+  const p=[];
+  if(img){
+    p.push(`<image href="${img}" x="0" y="0" width="${w}" height="${h}" preserveAspectRatio="xMidYMid meet"/>`);
+  }else{
+    return `<div class="pf-pe">写真${n}</div>`;
+  }
+  annList.forEach(a=>p.push(mPhAsvg(a,w,h)));
+  mpCurrentRowId=saved;
+  return `<svg viewBox="0 0 ${w} ${h}" style="width:100%;max-height:${maxH||60}mm;display:block;background:#f0f0f0;" preserveAspectRatio="xMidYMid meet">${p.join('')}</svg>`;
+}
+/* ==================== END 写真記録システム ==================== */
+
+/* ==================== EXCEL IMPORT ==================== */
+let xlRows=[];  // 読み込んだ行データ
+
+// 列名→内部キーのマッピング
+const XL_COL_MAP={
+  '患者名':'name','虫歯本数':'cav','歯石':'calc','プラーク':'plaq',
+  '歯周病':'peri','食物残渣':'food','舌の汚れ':'tong','入れ歯問題':'dent',
+  '口臭':'odor','診療必要性':'tnec','ケア必要性':'cnec',
+  '治療アドバイス':'advT','ケアアドバイス':'advC'
+};
+// 「あり/なし」変換
+function xlBool(v){return String(v||'').trim()==='あり';}
+// 歯石/プラーク/歯周病のレベル
+const XL_LV={
+  '少量':'少量','多量':'多量','中量':'中量','軽度':'軽度','中度':'中度','重度':'重度',
+  '':'','なし':''
+};
+const XL_TN={'無し':'無し','有り':'有り','緊急に有り':'緊急に有り','':'有り'};
+const XL_CN={'無し':'無し','有り':'有り','':'有り'};
+
+function openXlImport(){
+  xlRows=[];
+  document.getElementById('xl-status').textContent='';
+  document.getElementById('xl-count').style.display='none';
+  document.getElementById('xl-preview').style.display='none';
+  document.getElementById('xl-import-btn').disabled=true;
+  document.getElementById('xl-import-btn').style.background='#aaa';
+  document.getElementById('xl-modal').classList.add('open');
+}
+function closeXlImport(){document.getElementById('xl-modal').classList.remove('open');}
+function xlDrag(e,on){e.preventDefault();document.getElementById('xl-drop').classList.toggle('drag',on);}
+function xlDrop(e){e.preventDefault();xlDrag(e,false);const f=e.dataTransfer.files[0];if(f)xlLoadFile(f);}
+function xlFile(inp){if(inp.files[0])xlLoadFile(inp.files[0]);}
+
+function xlLoadFile(file){
+  const reader=new FileReader();
+  reader.onload=(ev)=>{
+    try{
+      const data=new Uint8Array(ev.target.result);
+      const wb=XLSX.read(data,{type:'uint8array'});
+      const ws=wb.Sheets[wb.SheetNames[0]];
+      const raw=XLSX.utils.sheet_to_json(ws,{header:1,defval:''});
+      // ヘッダー行を探す（患者名が含まれる行）
+      let hdrIdx=raw.findIndex(r=>r.some(c=>String(c).includes('患者名')));
+      if(hdrIdx<0){document.getElementById('xl-status').textContent='⚠️ 「患者名」列が見つかりません。テンプレートを確認してください。';return;}
+      const hdrs=raw[hdrIdx].map(c=>String(c).trim());
+      // データ行（ヘッダーの次の行から、ただしヒント行はスキップ）
+      const dataRows=raw.slice(hdrIdx+1).filter(r=>{
+        const name=String(r[hdrs.indexOf('患者名')]||'').trim();
+        return name && !name.startsWith('例：') && !name.startsWith('姓名');
+      });
+      if(!dataRows.length){document.getElementById('xl-status').textContent='⚠️ データ行が見つかりません（2行目の入力例はスキップされます）';return;}
+      // 行データを変換
+      xlRows=dataRows.map(r=>{
+        const get=(col)=>String(r[hdrs.indexOf(col)]||'').trim();
+        return{
+          name:get('患者名'),
+          cav:parseInt(get('虫歯本数'))||0,
+          calc:XL_LV[get('歯石')]??'',
+          plaq:XL_LV[get('プラーク')]??'',
+          peri:XL_LV[get('歯周病')]??'',
+          food:xlBool(get('食物残渣')),
+          tong:xlBool(get('舌の汚れ')),
+          dent:xlBool(get('入れ歯問題')),
+          odor:xlBool(get('口臭')),
+          tnec:XL_TN[get('診療必要性')]||'有り',
+          cnec:XL_CN[get('ケア必要性')]||'有り',
+          advT:get('治療アドバイス'),
+          advC:get('ケアアドバイス'),
+        };
+      });
+      // プレビュー表示
+      const cnt=document.getElementById('xl-count');
+      cnt.textContent=`✅ ${xlRows.length}名のデータを読み込みました`;
+      cnt.style.display='block';
+      // 簡易プレビューテーブル
+      const tbl=document.getElementById('xl-prev-tbl');
+      tbl.innerHTML='<tr><th>#</th><th>患者名</th><th>虫歯</th><th>歯石</th><th>診療</th></tr>'+
+        xlRows.map((r,i)=>`<tr><td>${i+1}</td><td>${r.name}</td><td>${r.cav}本</td><td>${r.calc||'なし'}</td><td>${r.tnec}</td></tr>`).join('');
+      document.getElementById('xl-preview').style.display='block';
+      document.getElementById('xl-status').textContent='';
+      const btn=document.getElementById('xl-import-btn');
+      btn.disabled=false;
+      btn.style.background='#1a6b3c';
+    }catch(err){
+      document.getElementById('xl-status').textContent='❌ 読込エラー: '+err.message;
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function xlDoImport(){
+  if(!xlRows.length)return;
+  const addExisting=confirm(`${xlRows.length}名のデータをインポートします。\n\n既存のデータに追加しますか？\n（「いいえ」で既存データをクリアしてから追加）`);
+  if(!addExisting){
+    document.getElementById('tbody').innerHTML='';
+    updateNums();
+  }
+  xlRows.forEach(d=>addRow(d));
+  closeXlImport();
+  // 取込後スクロール
+  document.querySelector('#tbody tr:last-child')?.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+/* ==================== END EXCEL IMPORT ==================== */
+
+
+/* 患者ごとの歯式アノテーション */
+const patientAnnos={}; // rowId→[]
+let tcAnnoCtr=0;
+let tcIsAnno=false, tcAnnoSym='circle', tcAnnoCol='#e74c3c';
+function initPAnno(id){if(!patientAnnos[id])patientAnnos[id]=[];}
+function tcAsvg(a){
+  const{s,x,y,c,txt}=a;
+  const es3=t=>String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  switch(s){
+    case 'circle':   return `<circle cx="${x}" cy="${y}" r="13" fill="none" stroke="${c}" stroke-width="2.5"/>`;
+    case 'circle_f': return `<circle cx="${x}" cy="${y}" r="9" fill="${c}" opacity=".6"/>`;
+    case 'circle_lg':return `<circle cx="${x}" cy="${y}" r="20" fill="none" stroke="${c}" stroke-width="2.5"/>`;
+    case 'cross':    return `<g transform="translate(${x},${y})"><line x1="-9" y1="-9" x2="9" y2="9" stroke="${c}" stroke-width="2.5"/><line x1="9" y1="-9" x2="-9" y2="9" stroke="${c}" stroke-width="2.5"/></g>`;
+    case 'arrow_r':  return `<text x="${x}" y="${y+5}" font-size="16" text-anchor="middle" fill="${c}">→</text>`;
+    case 'arrow_l':  return `<text x="${x}" y="${y+5}" font-size="16" text-anchor="middle" fill="${c}">←</text>`;
+    case 'arrow_d':  return `<text x="${x}" y="${y+5}" font-size="16" text-anchor="middle" fill="${c}">↓</text>`;
+    case 'arrow_u':  return `<text x="${x}" y="${y+5}" font-size="16" text-anchor="middle" fill="${c}">↑</text>`;
+    case 'text':     return `<text x="${x}" y="${y}" font-size="12" text-anchor="middle" fill="${c}" font-weight="bold" font-family="sans-serif">${es3(txt||'')}</text>`;
+    default: return '';
+  }
+}
+function renderTcModal(){
+  const svg=document.getElementById('tc-svg');
+  if(!svg)return;
+  const TMAP2={};TOOLS_C.forEach(t=>TMAP2[t.t]=t);
+  const p=[];
+  // アーチ背景（同一）
+  p.push(`<defs><clipPath id='cup'><rect x='0' y='0' width='270' height='171'/></clipPath><clipPath id='clo'><rect x='0' y='169' width='270' height='161'/></clipPath></defs>
+  <ellipse cx='135' cy='165' rx='112' ry='142' fill='#d4d4d4' clip-path='url(#cup)'/>
+  <ellipse cx='135' cy='165' rx='88'  ry='118' fill='white'   clip-path='url(#cup)'/>
+  <ellipse cx='135' cy='175' rx='112' ry='142' fill='#d4d4d4' clip-path='url(#clo)'/>
+  <ellipse cx='135' cy='175' rx='88'  ry='118' fill='white'   clip-path='url(#clo)'/>
+  <rect x='0' y='162' width='270' height='16' fill='white'/>
+  <line x1='135' y1='10' x2='135' y2='320' stroke='#bbb' stroke-width='0.8' stroke-dasharray='4,3'/>
+  <line x1='0' y1='170' x2='270' y2='170' stroke='#bbb' stroke-width='0.6' stroke-dasharray='4,3'/>
+  <text x='7' y='174' font-size='12' fill='#888' font-family='sans-serif'>右</text>
+  <text x='250' y='174' font-size='12' fill='#888' font-family='sans-serif'>左</text>`);
+  // 歯式③ 舌イラスト（舌の汚れ時）
+  {const _rid=tcCurrentBtn&&tcCurrentBtn.closest('tr')?tcCurrentBtn.closest('tr').id:'';const _ff=facilityData[_rid];if(_ff&&_ff.s3)p.push(tongueSVG(_ff.s3R,_ff.s3A));}
+  for(const t of TD){
+    const st=tcSt[t.id]||'';
+    const td2=TMAP2[st]||TMAP2[''];
+    const fill=st?td2.svgFill:'#fff';
+    const stroke=st?'#555':'#999';
+    const sw=st?'1.8':'1';
+    const tc=st?(td2.svgText||'#000'):'#999';
+    const fs=st&&st.length>2?'7':'9';
+    const isU=t.id.startsWith('U');
+    const acx=135,acy=isU?165:175;
+    const dx=t.cx-acx,dy=t.cy-acy;
+    const mag=Math.sqrt(dx*dx+dy*dy)||1;
+    const nx=+(t.cx+18*dx/mag).toFixed(1), ny=+(t.cy+18*dy/mag+3.5).toFixed(1);
+    p.push(`<g onclick="clickTcTooth('${t.id}')" style="cursor:${tcIsAnno?'crosshair':'pointer'};">
+      <circle cx="${t.cx}" cy="${t.cy}" r="9" fill="${fill}" stroke="${stroke}" stroke-width="${sw}"/>
+      ${st?`<text x="${t.cx}" y="${t.cy+3.5}" font-size="${fs}" text-anchor="middle" fill="${tc}" font-weight="bold" font-family="sans-serif">${sym2(st)}</text>`:''}
+    </g>
+    <text x="${nx}" y="${ny}" font-size="8" text-anchor="middle" fill="#555" font-family="sans-serif" pointer-events="none">${t.n}</text>`);
+  }
+  // 内側アーチ（歯式2）
+  for(const t of TD2){
+    const s2=sub2St[t.id]||'';
+    const s2d=SUB2MAP[s2];
+    const fill2=s2?(s2d?s2d.svgFill:'#eee'):'rgba(255,255,255,0.5)';
+    const stroke2=s2?'#777':'rgba(180,180,180,0.5)';
+    const tc2=s2d?s2d.svgText:'#aaa';
+    const fs2=s2.length>2?'5':'6.5';
+    p.push(`<g id="t2-${t.id}" onclick="clickTSub2('${t.id}',event)" style="cursor:${showSub2Mode?'copy':'default'};">
+      ${s2?`<text x="${t.cx}" y="${t.cy+2.5}" font-size="${fs2}" text-anchor="middle" fill="${tc2}" font-weight="bold" font-family="sans-serif">${s2}</text>`:`<text x="${t.cx}" y="${t.cy+2.5}" font-size="5" text-anchor="middle" fill="rgba(180,180,180,0.4)" font-family="sans-serif">・</text>`}
+    </g>`);
+  }
+  // アノテーション
+  const rid=tcCurrentBtn?.closest('tr')?.id||'';
+  const annList=patientAnnos[rid]||[];
+  annList.forEach(a=>p.push(tcAsvg(a)));
+  // オーバーレイ
+  p.push(`<rect x="0" y="0" width="270" height="330" fill="${tcIsAnno?'rgba(0,0,0,.01)':'transparent'}" style="cursor:${tcIsAnno?'crosshair':'default'};" pointer-events="${tcIsAnno?'all':'none'}" onclick="handleTcAnnoClick(event)"/>`);
+  // 歯式② 文字アノテーションのドラッグ用ハンドル（オーバーレイより上）
+  annList.forEach(a=>{
+    if(a.s==='text'){
+      p.push(`<rect class="tc-text-handle" x="${a.x-24}" y="${a.y-13}" width="48" height="26" rx="3" fill="rgba(0,80,180,0.06)" stroke="rgba(0,80,180,0.4)" stroke-width="0.7" stroke-dasharray="2,2" style="cursor:move;" onmousedown="startTcTextDrag(event,'${a.id}')"/>`);
+    }
+  });
+  svg.innerHTML=p.join('');
+}
+function toggleTcAnno(){
+  tcIsAnno=!tcIsAnno;
+  const btn=document.getElementById('tc-anno-btn');
+  if(btn){btn.classList.toggle('mp-anno-on',tcIsAnno);btn.textContent=tcIsAnno?'🔴 書き込み中':'✏️ 自由書き込み';}
+  document.getElementById('tc-anno-tools').style.display=tcIsAnno?'flex':'none';
+  // 書き込みモードON時にデフォルトのactive状態を設定
+  if(tcIsAnno){
+    document.querySelectorAll('.tc-asym').forEach(b=>{
+      b.classList.toggle('active', b.getAttribute('onclick')&&b.getAttribute('onclick').indexOf("'"+tcAnnoSym+"'")>=0);
+    });
+    document.querySelectorAll('.tc-adot').forEach(d=>{
+      const bg=(d.getAttribute('style')||'').match(/background:([^;]+)/);
+      d.classList.toggle('active', bg&&bg[1].trim().toLowerCase()===tcAnnoCol.toLowerCase());
+    });
+  }
+  renderTcModal();
+}
+function handleTcAnnoClick(e){
+  if(!tcIsAnno)return;
+  e.stopPropagation();
+  const svg=document.getElementById('tc-svg');
+  const r=svg.getBoundingClientRect();
+  const vb=svg.viewBox.baseVal;
+  const x=(e.clientX-r.left)*vb.width/r.width;
+  const y=(e.clientY-r.top)*vb.height/r.height;
+  const rid=tcCurrentBtn?.closest('tr')?.id||'';
+  initPAnno(rid);
+  if(tcAnnoSym==='eraser'){
+    const arr=patientAnnos[rid];let mi=-1,md=Infinity;
+    arr.forEach((a,i)=>{const d=Math.hypot(a.x-x,a.y-y);if(d<md){md=d;mi=i;}});
+    if(mi>=0&&md<20){arr.splice(mi,1);}
+  }else if(tcAnnoSym==='text'){
+    const txt=prompt('表示する文字を入力してください：','');
+    if(txt===null||txt==='')return;
+    patientAnnos[rid].push({id:'tc'+(tcAnnoCtr++),s:'text',x,y,c:tcAnnoCol,txt:txt});
+  }else{
+    patientAnnos[rid].push({id:'tc'+(tcAnnoCtr++),s:tcAnnoSym,x,y,c:tcAnnoCol});
+  }
+  renderTcModal();
+}
+function setTcAnnoSym(s,el){tcAnnoSym=s;document.querySelectorAll('.tc-asym').forEach(b=>b.classList.remove('active'));el.classList.add('active');}
+function setTcAnnoCol(c,el){tcAnnoCol=c;document.querySelectorAll('.tc-adot').forEach(d=>d.classList.remove('active'));el.classList.add('active');}
+/* 歯式② 文字アノテーションのドラッグ移動／クリックで再編集 */
+let _tcTextDrag=null;
+function startTcTextDrag(e,aid){
+  e.stopPropagation();
+  const rid=tcCurrentBtn&&tcCurrentBtn.closest('tr')?tcCurrentBtn.closest('tr').id:'';
+  const arr=patientAnnos[rid]||[];
+  if(tcIsAnno&&tcAnnoSym==='eraser'){
+    const i=arr.findIndex(o=>o.id===aid);
+    if(i>=0){arr.splice(i,1);renderTcModal();}
+    return;
+  }
+  e.preventDefault();
+  _tcTextDrag={aid:aid,rid:rid,moved:false};
+  document.addEventListener('mousemove',onTcTextDragMove);
+  document.addEventListener('mouseup',onTcTextDragEnd);
+}
+function onTcTextDragMove(e){
+  if(!_tcTextDrag)return;
+  const svg=document.getElementById('tc-svg');
+  if(!svg)return;
+  const r=svg.getBoundingClientRect();
+  const vb=svg.viewBox.baseVal;
+  const x=(e.clientX-r.left)*vb.width/r.width;
+  const y=(e.clientY-r.top)*vb.height/r.height;
+  const arr=patientAnnos[_tcTextDrag.rid]||[];
+  const a=arr.find(o=>o.id===_tcTextDrag.aid);
+  if(a){
+    a.x=Math.max(8,Math.min(vb.width-8,x));
+    a.y=Math.max(12,Math.min(vb.height-8,y));
+    _tcTextDrag.moved=true;
+    renderTcModal();
+  }
+}
+function onTcTextDragEnd(e){
+  if(_tcTextDrag&&!_tcTextDrag.moved){
+    const arr=patientAnnos[_tcTextDrag.rid]||[];
+    const a=arr.find(o=>o.id===_tcTextDrag.aid);
+    if(a){
+      const nv=prompt('文字を編集（空欄で削除）：',a.txt||'');
+      if(nv!==null){
+        if(nv===''){const i=arr.indexOf(a);if(i>=0)arr.splice(i,1);}
+        else a.txt=nv;
+        renderTcModal();
+      }
+    }
+  }
+  _tcTextDrag=null;
+  document.removeEventListener('mousemove',onTcTextDragMove);
+  document.removeEventListener('mouseup',onTcTextDragEnd);
+}
+
+
+/* ── CSV書き出し（全患者） ── */
+function exportCSVAll(){
+  const rows=document.querySelectorAll('#tbody tr');
+  if(!rows.length){alert('患者データがありません。');return;}
+  const shared={
+    fac:document.getElementById('s-fac').value.trim(),
+    date:document.getElementById('s-date').value.trim(),
+    doc:document.getElementById('s-doc').value.trim(),
+    cli:document.getElementById('s-cli').value.trim(),
+  };
+  // 施設用：所見のサマリーをCSV化
+  const header=['施設名','日付','患者名','居室','治療必要数','複数本','上入れ歯','下入れ歯','歯周病治療','①開口問題','②歯垢','③舌汚れ','④歯肉腫れ','⑤歯肉出血','⑥咬合不可','⑦むせ','⑧うがい不可','⑨溜め込み','歯石付着','口腔乾燥','口臭','自由記述','治療アドバイス','ケアアドバイス','歯式','画像1','画像2','画像3','画像4'];
+  const dataRows=[header];
+  const yn=v=>v?'あり':'なし';
+  rows.forEach(tr=>{
+    const d=getRowData(tr);
+    if(!d.name)return;
+    const f=d.facility||{};
+    const teeth=Object.entries(d.toothSt||{}).map(([k,v])=>k+':'+v).join(' ');
+    dataRows.push([
+      shared.fac,shared.date,d.name,d.room||'',
+      f.cv?(f.cvN||''):'', f.cvM?'複数本':'',
+      f.dnU?(f.dnUT||'新製')+(f.dnUD?'(新製困難)':''):'',
+      f.dnL?(f.dnLT||'新製')+(f.dnLD?'(新製困難)':''):'',
+      yn(f.perio),
+      yn(f.s1),
+      f.s2?`${f.s2R||'全体'}/${f.s2A||'多量'}`:'なし',
+      f.s3?`${f.s3R||'全体'}/${f.s3A||'多量'}`:'なし',
+      yn(f.s4),yn(f.s5),yn(f.s6),yn(f.s7),yn(f.s8),
+      f.s9?(f.s9A||'多量'):'なし',
+      f.oCalc?`${f.oCalcR||'全体'}に付着`:'',
+      yn(f.oDry), yn(f.oOdor),
+      f.oFree||'',
+      d.advT, d.advC, teeth,
+      // v1.2: 画像ファイル名（base64ではなくファイル名のみ）
+      ...(()=>{
+        const pd=patientPhotos[d._rowId||'']||{};
+        const fn=pd.fileNames||{};
+        return [1,2,3,4].map(n=>(pd.ph&&pd.ph[n])?(fn[n]||'(ファイル名不明)'):'');
+      })()
+    ]);
+  });
+  const bom='\uFEFF';
+  const csv=bom+dataRows.map(r=>r.map(v=>'"'+String(v||'').replace(/"/g,'""')+'"').join(',')).join('\n');
+  const a=document.createElement('a');
+  const dt=shared.date.replace(/[年月日]/g,'-')||'date';
+  a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);
+  const csvDt2=(shared.date||'').replace(/[年月]/g,'-').replace('日','');
+  a.download=(csvDt2+'_'+(shared.fac||'施設')).replace(/\s+/g,'_')+'_施設健診一覧.csv';
+  a.click();
+}
+
+
+
+
+/* 全欠損/全健康 */
+function fillAll(st){
+  TD.forEach(t=>{
+    if(st===''){delete tcSt[t.id];}
+    else if(!tcSt[t.id]){tcSt[t.id]=st;}
+  });
+  renderTcModal();
+}
+
+/* ==================== 共通⑩ 自動保存（ブラウザ localStorage） ==================== */
+const AUTOSAVE_KEY='kensin_facility_v2_autosave';
+let _lastSavedJSON='';
+let _restoring=false;
+let _saveTimer=null;
+
+function _gv(id){const el=document.getElementById(id);return el?el.value:'';}
+function _sv(id,v){const el=document.getElementById(id);if(el)el.value=(v==null?'':v);}
+function _hhmmss(){const d=new Date();const z=n=>('0'+n).slice(-2);return z(d.getHours())+':'+z(d.getMinutes())+':'+z(d.getSeconds());}
+function _setSaveStatus(txt,col){const el=document.getElementById('save-status');if(el){el.textContent=txt;el.style.color=col||'#1a6b3c';}}
+
+function collectState(){
+  const rows=[];
+  document.querySelectorAll('#tbody tr').forEach(tr=>{
+    const d=getRowData(tr);
+    const tb=tr.querySelector('.tooth-btn');
+    const pc=tr.querySelector('.prev-ck');
+    rows.push({
+      name:d.name,room:d.room,tkeys:d.tkeys,ckeys:d.ckeys,
+      advT:d.advT,advC:d.advC,toothSt:d.toothSt,facility:d.facility,
+      sub2:(tb&&tb.dataset.sub2)||'',
+      annos:patientAnnos[tr.id]||[],
+      photos:patientPhotos[tr.id]||null,
+      prevChecked:pc?pc.checked:true
+    });
+  });
+  const lg=document.getElementById('s-legend');
+  return {v:1,ts:Date.now(),
+    shared:{fac:_gv('s-fac'),date:_gv('s-date'),doc:_gv('s-doc'),cli:_gv('s-cli'),tel:_gv('s-tel'),
+      rtype:_gv('s-rtype'),legend:lg?lg.checked:true},
+    rows:rows};
+}
+
+function doSave(){
+  if(_restoring)return;
+  let st;
+  try{ st=collectState(); }catch(e){ return; }
+  let json=JSON.stringify(st);
+  if(json===_lastSavedJSON)return;
+  try{
+    localStorage.setItem(AUTOSAVE_KEY,json);
+    _lastSavedJSON=json;
+    _setSaveStatus('💾 保存 '+_hhmmss(),'#1a6b3c');
+  }catch(err){
+    // 容量超過 → 写真を除いて再試行
+    try{
+      st.rows.forEach(r=>{r.photos=null;});
+      st._photosDropped=true;
+      json=JSON.stringify(st);
+      localStorage.setItem(AUTOSAVE_KEY,json);
+      _lastSavedJSON=json;
+      _setSaveStatus('💾 保存（写真除く・容量上限）','#b8860b');
+    }catch(e2){
+      _setSaveStatus('\u26a0 自動保存できません（容量超過）','#c0392b');
+    }
+  }
+}
+
+function scheduleSave(){clearTimeout(_saveTimer);_saveTimer=setTimeout(doSave,1000);}
+
+function _refreshRecordBtn(tr){
+  const tb=tr.querySelector('.tooth-btn');
+  if(!tb)return;
+  let st={};
+  try{ st=JSON.parse((tb.dataset.st||'{}').replace(/&quot;/g,'"')); }catch(e){}
+  const ph=patientPhotos[tr.id]||{};
+  const nt=Object.keys(st||{}).length;
+  const np=[1,2,3,4].filter(n=>ph.ph&&ph.ph[n]).length;
+  const l=[];
+  if(nt)l.push('歯式('+nt+')');
+  if(np)l.push('写真('+np+'枚)');
+  tb.textContent=l.length?l.join('・'):'記録';
+  tb.classList.toggle('has-data',l.length>0);
+}
+
+/* ── 医院の下書きファイル(JSON)を読み込む ── */
+function loadDraftFile(input){
+  const f=input.files&&input.files[0];
+  if(!f){return;}
+  const reader=new FileReader();
+  reader.onload=function(){
+    let st=null;
+    try{ st=JSON.parse(reader.result); }catch(e){
+      alert('このファイルは読み込めませんでした。\n医院の下書きツールで保存した「.json」ファイルを選んでください。');
+      input.value='';return;
+    }
+    if(!st||!st.rows){
+      alert('健診下書きのデータが見つかりませんでした。\nファイルが正しいか確認してください。');
+      input.value='';return;
+    }
+    const cnt=st.rows.length;
+    if(confirm('医院の下書きデータ（患者'+cnt+'名）を読み込みます。\n\nよろしいですか？\n（現在の入力内容は上書きされます）')){
+      restoreState(st);
+      try{_lastSavedJSON=JSON.stringify(collectState());}catch(e){}
+      _setSaveStatus('📲 下書き読込完了','#1a3f6f');
+    }
+    input.value='';
+  };
+  reader.onerror=function(){alert('ファイルの読み込みに失敗しました。');input.value='';};
+  reader.readAsText(f);
+}
+
+function restoreState(st){
+  if(!st||!st.rows)return;
+  _restoring=true;
+  try{
+    const sh=st.shared||{};
+    _sv('s-fac',sh.fac);_sv('s-date',sh.date);_sv('s-doc',sh.doc);
+    _sv('s-cli',sh.cli);_sv('s-tel',sh.tel);_sv('s-rtype',sh.rtype);
+    const lg=document.getElementById('s-legend');
+    if(lg)lg.checked=(sh.legend!==false);
+    document.getElementById('tbody').innerHTML='';
+    Object.keys(facilityData).forEach(k=>delete facilityData[k]);
+    Object.keys(patientPhotos).forEach(k=>delete patientPhotos[k]);
+    Object.keys(patientAnnos).forEach(k=>delete patientAnnos[k]);
+    st.rows.forEach(r=>{
+      addRow({name:r.name,room:r.room,tkeys:r.tkeys,ckeys:r.ckeys,
+        advT:r.advT,advC:r.advC,toothSt:r.toothSt,facility:r.facility});
+      const tr=document.getElementById('tbody').lastElementChild;
+      if(!tr)return;
+      const tb=tr.querySelector('.tooth-btn');
+      if(tb&&r.sub2)tb.dataset.sub2=r.sub2;
+      if(r.annos&&r.annos.length)patientAnnos[tr.id]=r.annos;
+      if(r.photos)patientPhotos[tr.id]=r.photos;
+      const pc=tr.querySelector('.prev-ck');
+      if(pc&&r.prevChecked===false){pc.checked=false;updatePrevSelectionVisual(pc);}
+      _refreshRecordBtn(tr);
+    });
+    updateNums();
+  }finally{
+    _restoring=false;
+  }
+}
+
+function startAutoSave(){
+  document.addEventListener('input',scheduleSave,true);
+  document.addEventListener('change',scheduleSave,true);
+  setInterval(doSave,8000);
+  window.addEventListener('beforeunload',doSave);
+  _setSaveStatus('💾 自動保存 ON','#1a6b3c');
+}
+
+/* ==================== INIT ==================== */
+setToday();
+(function(){
+  let saved=null;
+  try{const raw=localStorage.getItem(AUTOSAVE_KEY);if(raw)saved=JSON.parse(raw);}catch(e){saved=null;}
+  const hasContent=saved&&saved.rows&&(
+    saved.rows.some(r=>(r.name&&r.name.trim())||r.facility||(r.advT&&r.advT.trim())||(r.advC&&r.advC.trim())||(r.toothSt&&Object.keys(r.toothSt).length)||r.photos)
+    ||(saved.shared&&(saved.shared.fac||'').trim())
+  );
+  if(hasContent){
+    const when=saved.ts?new Date(saved.ts).toLocaleString('ja-JP'):'';
+    if(confirm('前回の途中データが見つかりました'+(when?'（'+when+'）':'')+'。\n復元しますか？\n\n「キャンセル」を選ぶと新規で開始します。')){
+      restoreState(saved);
+    }else{
+      addRows(3);
+    }
+  }else{
+    addRows(3);
+  }
+  startAutoSave();
+  try{_lastSavedJSON=JSON.stringify(collectState());}catch(e){}
+})();
+</script>
+
+<!-- 記録入力モーダル（歯式＋写真） -->
+<div class="tc-modal" id="tc-modal" onclick="if(event.target===this)closeChart()">
+  <div class="tc-box" style="display:flex;flex-direction:column;max-height:92vh;width:420px;max-width:96vw;">
+
+    <!-- ヘッダー（スクロールしない） -->
+    <div class="tc-title" style="flex-shrink:0;">
+      <span>📋 記録入力</span>
+      <button class="tc-close" onclick="closeChart()">✕</button>
+    </div>
+
+    <!-- タブボタン（スクロールしない） -->
+    <div class="tc-tabs" style="flex-shrink:0;">
+      <button id="tc-tab-chart" class="tc-tab active" onclick="setMTab('chart')">🦷 歯式</button>
+      <button id="tc-tab-photo" class="tc-tab" onclick="setMTab('photo')">📷 写真</button>
+    </div>
+
+    <!-- スクロール可能な本体 -->
+    <div style="flex:1;overflow-y:auto;min-height:0;padding:0 2px;">
+
+      <!-- 歯式エリア -->
+      <div id="tc-chart-area">
+        <div class="tc-svg-wrap"><svg id="tc-svg" viewBox="0 0 270 330"></svg></div>
+        <!-- 全欠損/全健康ボタン -->
+        <div style="display:flex;gap:4px;margin-bottom:5px;">
+          <button onclick="fillAll('x')" style="flex:1;padding:4px;border-radius:4px;border:1px solid #888;background:#888;color:white;cursor:pointer;font-size:10px;font-weight:bold;">全欠損(×)</button>
+          <button onclick="fillAll('o')" style="flex:1;padding:4px;border-radius:4px;border:1px solid #2e7d32;background:#2e7d32;color:white;cursor:pointer;font-size:10px;font-weight:bold;">全健康(○)</button>
+          <button onclick="fillAll('')" style="flex:1;padding:4px;border-radius:4px;border:1px solid #ccc;background:#f0f0f0;color:#333;cursor:pointer;font-size:10px;">全消去</button>
+        </div>
+        <!-- 歯式記号ツール -->
+        <div class="tc-tools"><button class="tc-tool" data-t="" style="background:#aaa;color:#333;border-color:#aaa;" onclick="setTcTool('',this)">消去</button>
+<button class="tc-tool" data-t="x" style="background:#888;color:white;border-color:#888;" onclick="setTcTool('x',this)">× 欠損</button>
+<button class="tc-tool" data-t="o" style="background:rgba(230,255,230,1);color:#333;border-color:rgba(230,255,230,1);" onclick="setTcTool('o',this)">○ 健康</button>
+<button class="tc-tool" data-t="C1" style="background:#b8860b;color:#333;border-color:#b8860b;" onclick="setTcTool('C1',this)">C1</button>
+<button class="tc-tool" data-t="C2" style="background:#cc7000;color:#333;border-color:#cc7000;" onclick="setTcTool('C2',this)">C2</button>
+<button class="tc-tool" data-t="C3" style="background:#c84b00;color:#333;border-color:#c84b00;" onclick="setTcTool('C3',this)">C3</button>
+<button class="tc-tool" data-t="C4" style="background:#9b1b00;color:white;border-color:#9b1b00;" onclick="setTcTool('C4',this)">C4</button>
+<button class="tc-tool" data-t="P" style="background:#c0392b;color:white;border-color:#c0392b;" onclick="setTcTool('P',this)">P 歯周</button>
+<button class="tc-tool" data-t="CR" style="background:#2471a3;color:#333;border-color:#2471a3;" onclick="setTcTool('CR',this)">CR 白詰</button>
+<button class="tc-tool" data-t="Cr" style="background:#777;color:#333;border-color:#777;" onclick="setTcTool('Cr',this)">Cr 金冠</button>
+<button class="tc-tool" data-t="FM" style="background:#666;color:#333;border-color:#666;" onclick="setTcTool('FM',this)">FM 全金</button>
+<button class="tc-tool" data-t="MB" style="background:#1a6b3c;color:#333;border-color:#1a6b3c;" onclick="setTcTool('MB',this)">MB 白冠</button>
+<button class="tc-tool" data-t="HR" style="background:#1a5276;color:#333;border-color:#1a5276;" onclick="setTcTool('HR',this)">HR</button>
+<button class="tc-tool" data-t="In" style="background:#4a148c;color:white;border-color:#4a148c;" onclick="setTcTool('In',this)">In</button>
+<button class="tc-tool" data-t="AF" style="background:#00695c;color:white;border-color:#00695c;" onclick="setTcTool('AF',this)">AF</button>
+<button class="tc-tool" data-t="HJK" style="background:#37474f;color:white;border-color:#37474f;" onclick="setTcTool('HJK',this)">HJK</button>
+<button class="tc-tool" data-t="WSD" style="background:#e65100;color:white;border-color:#e65100;" onclick="setTcTool('WSD',this)">WSD</button>
+<button class="tc-tool" data-t="RF" style="background:#880e4f;color:white;border-color:#880e4f;" onclick="setTcTool('RF',this)">根面板</button></div>
+        <!-- 自由書き込みツール -->
+        <div style="margin-top:6px;">
+          <div style="display:flex;gap:4px;margin-bottom:4px;">
+            <button id="tc-anno-btn" class="mp-tool" onclick="toggleTcAnno()" style="flex:1;">✏️ 自由書き込み</button>
+            <button class="mp-tool" onclick="clearTcAnnos()" style="color:#c0392b;" title="書き込みを消去">🗑</button>
+          </div>
+          <div id="tc-anno-tools" style="display:none;flex-direction:column;gap:3px;">
+            <div class="mp-tool-row"><button class="tc-asym mp-tool" onclick="setTcAnnoSym('circle',this)">○</button><button class="tc-asym mp-tool" onclick="setTcAnnoSym('circle_f',this)">●</button><button class="tc-asym mp-tool" onclick="setTcAnnoSym('circle_lg',this)">◯大</button><button class="tc-asym mp-tool" onclick="setTcAnnoSym('cross',this)">×</button><button class="tc-asym mp-tool" onclick="setTcAnnoSym('arrow_r',this)">→</button><button class="tc-asym mp-tool" onclick="setTcAnnoSym('arrow_l',this)">←</button><button class="tc-asym mp-tool" onclick="setTcAnnoSym('arrow_d',this)">↓</button><button class="tc-asym mp-tool" onclick="setTcAnnoSym('arrow_u',this)">↑</button><button class="tc-asym mp-tool" onclick="setTcAnnoSym('text',this)">文字</button><button class="tc-asym mp-tool" onclick="setTcAnnoSym('eraser',this)">消去</button></div>
+            <div class="mp-col-row"><span style="font-size:10px;color:#666;">色：</span><div class="tc-adot mp-dot" style="background:#e74c3c;" onclick="setTcAnnoCol('#e74c3c',this)"></div><div class="tc-adot mp-dot" style="background:#e91e63;" onclick="setTcAnnoCol('#e91e63',this)"></div><div class="tc-adot mp-dot" style="background:#3498db;" onclick="setTcAnnoCol('#3498db',this)"></div><div class="tc-adot mp-dot" style="background:#2c3e50;" onclick="setTcAnnoCol('#2c3e50',this)"></div><div class="tc-adot mp-dot" style="background:#27ae60;" onclick="setTcAnnoCol('#27ae60',this)"></div><div class="tc-adot mp-dot" style="background:#f39c12;" onclick="setTcAnnoCol('#f39c12',this)"></div></div>
+            <div style="font-size:9.5px;color:#1565c0;background:#eef4ff;border-radius:3px;padding:3px 5px;margin-top:2px;">💡「文字」で置いた注釈は<b>ドラッグで移動</b>／クリックで再編集できます</div>
+          </div>
+        </div>
+        <!-- 補助歯式2 -->
+        <div style="margin-top:6px;">
+          <button onclick="toggleSub2Mode()" id="sub2btn" style="width:100%;padding:4px;border:1px solid rgba(100,100,100,.4);background:#f5f5f5;color:#333;border-radius:4px;cursor:pointer;font-size:10px;">＋ 補助歯式2（内側）モード</button>
+          <div id="sub2-area" style="display:none;margin-top:4px;font-size:10px;color:#e67e22;background:#fff8ee;padding:4px 6px;border-radius:4px;">🦷 歯をクリックするとポップアップで入力できます</div>
+        </div>
+        <!-- v1: 入れ歯の処置は詳細入力モーダルに統合 -->
+      </div>
+
+      <!-- 写真エリア -->
+      <div id="tc-photo-area" style="display:none;">
+        <div class="mp-thumbs" id="mp-thumbs">
+          <div class="mp-thumb active" id="mp-th-1" onclick="setMPhActive(1)"><span>写真1</span></div>
+          <div class="mp-thumb" id="mp-th-2" onclick="setMPhActive(2)"><span>写真2</span></div>
+          <div class="mp-thumb" id="mp-th-3" onclick="setMPhActive(3)"><span>写真3</span></div>
+          <div class="mp-thumb" id="mp-th-4" onclick="setMPhActive(4)"><span>写真4</span></div>
+        </div>
+        <div style="margin-bottom:6px;display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
+          <label style="font-size:10px;color:#666;">写真を選択：</label>
+          <input type="file" id="mp-file" accept="image/*" onchange="loadMPhoto()" style="font-size:10px;flex:1;min-width:120px;">
+          <button type="button" id="mp-del-btn" onclick="delMPhoto()" style="display:none;padding:4px 10px;background:#c0392b;color:white;border:none;border-radius:3px;cursor:pointer;font-size:10px;white-space:nowrap;">✕ この写真を削除</button>
+        </div>
+        <div class="mp-svg-wrap" id="mp-svg-wrap" style="max-height:45vh;overflow:hidden;">
+          <svg id="mp-svg" viewBox="0 0 1200 900" style="width:100%;display:block;background:#f0f0f0;"></svg>
+        </div>
+        <textarea id="mp-cap" class="mp-cap" placeholder="コメント（改行可）" rows="2" oninput="saveMCap()"></textarea>
+        <div style="display:flex;gap:4px;margin-bottom:4px;margin-top:4px;">
+          <button id="mp-anno-btn" class="mp-tool" onclick="toggleMAnno()" style="flex:1;">✏️ 書き込みモード</button>
+          <button class="mp-tool" onclick="clearMPhAnno()" style="color:#c0392b;">🗑</button>
+        </div>
+        <div style="display:flex;gap:4px;margin-bottom:4px;">
+          <button id="mp-crop-btn" class="mp-tool" onclick="toggleCrop()" style="flex:1;">✂ トリミング</button>
+          <button id="mp-crop-apply" class="mp-tool" onclick="applyCrop()" style="display:none;flex:1.5;background:#27ae60;color:#fff;border-color:#27ae60;font-weight:bold;">✓ この範囲で切り取る</button>
+        </div>
+        <div id="mp-tools-area" style="display:none;flex-direction:column;gap:3px;">
+          <div class="mp-tool-row"><button class="mp-tool" data-t="circle" onclick="setMPhSym('circle',this)">○</button><button class="mp-tool" data-t="circle_f" onclick="setMPhSym('circle_f',this)">●</button><button class="mp-tool" data-t="circle_lg" onclick="setMPhSym('circle_lg',this)">◯大</button><button class="mp-tool" data-t="cross" onclick="setMPhSym('cross',this)">×</button><button class="mp-tool" data-t="arrow_r" onclick="setMPhSym('arrow_r',this)">→</button><button class="mp-tool" data-t="arrow_l" onclick="setMPhSym('arrow_l',this)">←</button><button class="mp-tool" data-t="arrow_d" onclick="setMPhSym('arrow_d',this)">↓</button><button class="mp-tool" data-t="arrow_u" onclick="setMPhSym('arrow_u',this)">↑</button><button class="mp-tool" data-t="text" onclick="setMPhSym('text',this)">文字</button><button class="mp-tool" data-t="eraser" onclick="setMPhSym('eraser',this)">消去</button></div>
+          <div class="mp-col-row"><span style="font-size:10px;color:#666;">色：</span><div class="mp-dot" style="background:#e74c3c;" title="赤" onclick="setMPhCol('#e74c3c',this)"></div><div class="mp-dot" style="background:#e91e63;" title="ピンク" onclick="setMPhCol('#e91e63',this)"></div><div class="mp-dot" style="background:#3498db;" title="青" onclick="setMPhCol('#3498db',this)"></div><div class="mp-dot" style="background:#2c3e50;" title="黒" onclick="setMPhCol('#2c3e50',this)"></div><div class="mp-dot" style="background:#27ae60;" title="緑" onclick="setMPhCol('#27ae60',this)"></div><div class="mp-dot" style="background:#f39c12;" title="橙" onclick="setMPhCol('#f39c12',this)"></div></div>
+        </div>
+
+        <!-- 所見入力（写真タイプ用） -->
+        <div id="mp-findings" style="display:none;border-top:1px solid #ddd;margin-top:8px;padding-top:8px;">
+          <div style="font-size:10px;font-weight:bold;color:#555;margin-bottom:4px;">●所見入力</div>
+          <div style="font-size:10px;color:#555;margin-bottom:3px;font-weight:bold;">〜歯・入れ歯〜</div>
+          <label style="display:flex;align-items:center;gap:4px;font-size:10px;margin-bottom:3px;flex-wrap:wrap;">
+            <input type="checkbox" id="mp-f-cv"> 治療が必要な歯
+            <input type="number" id="mp-f-cvn" min="0" max="28" style="width:40px;font-size:10px;border:1px solid #ccc;border-radius:3px;padding:2px 4px;"> 本
+            <label style="display:flex;align-items:center;gap:2px;color:#c0392b;cursor:pointer;font-size:10px;background:#fff0f0;padding:1px 5px;border-radius:3px;border:1px solid #f5b7b1;">
+              <input type="checkbox" id="mp-f-cvm" onchange="onMpCvm()"> 複数本
+            </label>
+          </label>
+          <label style="display:flex;align-items:center;gap:4px;font-size:10px;margin-bottom:3px;">
+            <input type="checkbox" id="mp-f-cl"> 歯石付着
+            <select id="mp-f-clr" style="font-size:10px;border:1px solid #ccc;border-radius:3px;padding:2px;"><option>一部</option><option selected>全体</option></select>
+            <select id="mp-f-cll" style="font-size:10px;border:1px solid #ccc;border-radius:3px;padding:2px;"><option>少量</option><option>中量</option><option>多量</option></select>
+          </label>
+          <label style="display:flex;align-items:center;gap:4px;font-size:10px;margin-bottom:3px;">
+            <input type="checkbox" id="mp-f-dn-u"> 上顎の入れ歯
+            <select id="mp-f-dtu" style="font-size:10px;border:1px solid #ccc;border-radius:3px;padding:2px;"><option>新調</option><option>修理</option><option>調整</option><option>合わない</option><option>お持ちでない</option></select>
+            <label style="font-size:10px;display:flex;align-items:center;gap:2px;color:#c0392b;cursor:pointer;"><input type="checkbox" id="mp-f-dn-u-diff"> 新製困難</label>
+          </label>
+          <label style="display:flex;align-items:center;gap:4px;font-size:10px;margin-bottom:6px;">
+            <input type="checkbox" id="mp-f-dn-l"> 下顎の入れ歯
+            <select id="mp-f-dtl" style="font-size:10px;border:1px solid #ccc;border-radius:3px;padding:2px;"><option>新調</option><option>修理</option><option>調整</option><option>合わない</option><option>お持ちでない</option></select>
+            <label style="font-size:10px;display:flex;align-items:center;gap:2px;color:#c0392b;cursor:pointer;"><input type="checkbox" id="mp-f-dn-l-diff"> 新製困難</label>
+          </label>
+          <div style="font-size:10px;color:#555;margin-bottom:3px;font-weight:bold;">〜その他口腔内〜</div>
+          <label style="display:flex;align-items:center;gap:4px;font-size:10px;margin-bottom:3px;">
+            <input type="checkbox" id="mp-f-pl"> プラーク
+            <select id="mp-f-plr" style="font-size:10px;border:1px solid #ccc;border-radius:3px;padding:2px;"><option>一部</option><option selected>全体</option></select>
+            <select id="mp-f-pll" style="font-size:10px;border:1px solid #ccc;border-radius:3px;padding:2px;"><option>少量</option><option>中量</option><option>多量</option></select>
+          </label>
+          <label style="display:flex;align-items:center;gap:4px;font-size:10px;margin-bottom:3px;">
+            <input type="checkbox" id="mp-f-fd"> 食物残渣
+            <select id="mp-f-fdl" style="font-size:10px;border:1px solid #ccc;border-radius:3px;padding:2px;"><option>少量</option><option>中量</option><option>多量</option></select>
+          </label>
+          <label style="display:flex;align-items:center;gap:4px;font-size:10px;margin-bottom:3px;">
+            <input type="checkbox" id="mp-f-pe"> 歯周病
+            <select id="mp-f-per" style="font-size:10px;border:1px solid #ccc;border-radius:3px;padding:2px;"><option>一部</option><option selected>全体</option></select>
+            <select id="mp-f-pel" style="font-size:10px;border:1px solid #ccc;border-radius:3px;padding:2px;"><option>重度</option><option>中度</option><option>軽度</option></select>
+          </label>
+          <label style="display:flex;align-items:center;gap:4px;font-size:10px;margin-bottom:3px;">
+            <input type="checkbox" id="mp-f-tg"> 舌の汚れ
+            <select id="mp-f-tgl" style="font-size:10px;border:1px solid #ccc;border-radius:3px;padding:2px;"><option>少量</option><option>中量</option><option>多量</option></select>
+          </label>
+          <label style="display:flex;align-items:center;gap:4px;font-size:10px;margin-bottom:6px;">
+            <input type="checkbox" id="mp-f-dr"> 口腔乾燥
+            <select id="mp-f-drl" style="font-size:10px;border:1px solid #ccc;border-radius:3px;padding:2px;"><option>低度</option><option>中程度</option><option>重度</option></select>
+          </label>
+          <div style="font-size:10px;color:#555;margin-bottom:3px;font-weight:bold;">●総合評価</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;font-size:10px;">
+            <span>歯科診療：</span>
+            <label><input type="radio" name="mp-pte" value="不要"> 不要</label>
+            <label><input type="radio" name="mp-pte" value="必要" checked> 必要</label>
+            <label><input type="radio" name="mp-pte" value="緊急"> 緊急</label>
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;font-size:10px;margin-top:3px;">
+            <span>口腔ケア：</span>
+            <label><input type="radio" name="mp-pce" value="不要"> 不要</label>
+            <label><input type="radio" name="mp-pce" value="必要" checked> 必要</label>
+            <label><input type="radio" name="mp-pce" value="緊急"> 緊急</label>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /scroll area -->
+
+    <!-- フッター（スクロールしない） -->
+    <div class="tc-acts" style="flex-shrink:0;border-top:1px solid #eee;padding-top:8px;margin-top:4px;">
+      <button class="tc-btn tc-btn-clear" onclick="clearRecord()">🗑 クリア</button>
+      <button class="tc-btn tc-btn-cancel" onclick="closeChart()">キャンセル</button>
+      <button class="tc-btn tc-btn-save" onclick="saveRecord()">✓ 保存</button>
+    </div>
+
+  </div>
+</div>
+
+
+<!-- 詳細入力モーダル（施設用） -->
+<style>
+.fnd-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:9999;align-items:center;justify-content:center;}
+.fnd-modal.open{display:flex;}
+.fnd-box{background:white;border-radius:10px;width:540px;max-width:96vw;max-height:92vh;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 8px 32px rgba(0,0,0,.4);}
+.fnd-title{padding:12px 16px;background:#1a3f6f;color:white;font-weight:bold;display:flex;justify-content:space-between;align-items:center;flex-shrink:0;}
+.fnd-close{background:transparent;border:1px solid rgba(255,255,255,.4);color:white;width:28px;height:28px;border-radius:4px;cursor:pointer;font-size:14px;}
+.fnd-body{flex:1;overflow-y:auto;padding:14px 16px;}
+.fnd-acts{flex-shrink:0;padding:10px 16px;border-top:1px solid #eee;display:flex;gap:8px;justify-content:flex-end;background:#f8f9fa;}
+.fnd-btn{padding:8px 16px;border-radius:5px;border:1px solid #ccc;background:white;cursor:pointer;font-size:13px;}
+.fnd-btn-save{background:#1a3f6f;color:white;border-color:#1a3f6f;font-weight:bold;}
+.fnd-btn-clear{background:#fff;color:#c0392b;border-color:#e8a4a0;}
+.fnd-sec{margin-bottom:14px;border:1px solid #d0d7de;border-radius:6px;overflow:hidden;}
+.fnd-sec-h{background:#e8eef5;padding:6px 10px;font-size:11.5px;font-weight:bold;color:#1a3f6f;border-bottom:1px solid #d0d7de;}
+.fnd-sec-b{padding:8px 10px;}
+.fnd-row{display:flex;align-items:center;gap:6px;font-size:11.5px;margin-bottom:5px;flex-wrap:wrap;line-height:1.5;}
+.fnd-row label.mainck{display:flex;align-items:center;gap:4px;cursor:pointer;font-weight:600;min-width:120px;}
+.fnd-row label.mainck input[type=checkbox]{margin:0;transform:scale(1.15);}
+.fnd-row .sub{display:flex;align-items:center;gap:4px;flex-wrap:wrap;}
+.fnd-row select,.fnd-row input[type=number]{font-size:11px;border:1px solid #ccc;border-radius:3px;padding:2px 5px;}
+.fnd-row .num-cv{width:46px;}
+.fnd-row textarea{width:100%;font-size:11px;border:1px solid #ccc;border-radius:3px;padding:4px 6px;resize:vertical;font-family:inherit;}
+.fnd-row .charcnt{font-size:10px;color:#888;}
+.fnd-row .charcnt.over{color:#c0392b;font-weight:bold;}
+.fnd-pill{display:inline-block;padding:1px 6px;border-radius:8px;font-size:9.5px;background:#e74c3c;color:white;margin-left:4px;}
+.fnd-9-num{display:inline-block;width:18px;font-weight:bold;color:#1a3f6f;}
+</style>
+<div class="fnd-modal" id="fnd-modal" onclick="if(event.target===this)closeFindings()">
+  <div class="fnd-box">
+    <div class="fnd-title">
+      <span>📋 所見入力（治療＋口腔状態）</span>
+      <button class="fnd-close" onclick="closeFindings()">✕</button>
+    </div>
+    <div class="fnd-body">
+
+      <!-- ① 必要な治療について -->
+      <div class="fnd-sec">
+        <div class="fnd-sec-h">必要な治療について</div>
+        <div class="fnd-sec-b">
+          <div class="fnd-row">
+            <label class="mainck"><input type="checkbox" id="fnd-noprob"> 特に問題ありません</label>
+          </div>
+          <div class="fnd-row">
+            <label class="mainck"><input type="checkbox" id="fnd-cv"> 治療必要な歯</label>
+            <span class="sub">
+              <input type="number" id="fnd-cvn" min="0" max="28" placeholder="0" class="num-cv"> 本
+              <label style="color:#c0392b;cursor:pointer;font-size:10.5px;background:#fff0f0;padding:1px 5px;border-radius:3px;border:1px solid #f5b7b1;"><input type="checkbox" id="fnd-cvm" onchange="onFndCvm()"> 複数本</label>
+            </span>
+          </div>
+          <div class="fnd-row">
+            <label class="mainck"><input type="checkbox" id="fnd-dn-u"> 入れ歯（上顎）</label>
+            <span class="sub">
+              <select id="fnd-dn-u-t"><option>適合良好</option><option>新製</option><option>修理</option><option>調整</option><option>お持ちでない</option></select>
+              <label style="color:#c0392b;cursor:pointer;font-size:10.5px;"><input type="checkbox" id="fnd-dn-u-d"> 新製困難</label>
+            </span>
+          </div>
+          <div class="fnd-row">
+            <label class="mainck"><input type="checkbox" id="fnd-dn-l"> 入れ歯（下顎）</label>
+            <span class="sub">
+              <select id="fnd-dn-l-t"><option>適合良好</option><option>新製</option><option>修理</option><option>調整</option><option>お持ちでない</option></select>
+              <label style="color:#c0392b;cursor:pointer;font-size:10.5px;"><input type="checkbox" id="fnd-dn-l-d"> 新製困難</label>
+            </span>
+          </div>
+          <div class="fnd-row">
+            <label class="mainck"><input type="checkbox" id="fnd-perio"> 歯周病治療の必要性あり</label>
+          </div>
+        </div>
+      </div>
+
+      <!-- ② 口腔内の状態 -->
+      <div class="fnd-sec">
+        <div class="fnd-sec-h" style="display:flex;justify-content:space-between;align-items:center;">
+          <span>口腔内の状態（①〜⑨）</span>
+          <span style="display:flex;gap:4px;">
+            <button type="button" onclick="setAllStatesOn()" style="font-size:10px;padding:2px 8px;background:#c0392b;color:white;border:none;border-radius:3px;cursor:pointer;font-weight:bold;">①〜⑨ 全て問題ありON</button>
+            <button type="button" onclick="setAllStatesOff()" style="font-size:10px;padding:2px 8px;background:#7f8c8d;color:white;border:none;border-radius:3px;cursor:pointer;">全てOFF</button>
+          </span>
+        </div>
+        <div class="fnd-sec-b">
+          <div class="fnd-row">
+            <label class="mainck"><span class="fnd-9-num">①</span><input type="checkbox" id="fnd-s1"> 開口に問題あり</label>
+          </div>
+          <div class="fnd-row">
+            <label class="mainck"><span class="fnd-9-num">②</span><input type="checkbox" id="fnd-s2"> 歯の汚れ（歯垢）</label>
+            <span class="sub">
+              <select id="fnd-s2r"><option>全体</option><option>一部</option></select>
+              <select id="fnd-s2a"><option>少量</option><option>中量</option><option>多量</option></select>
+            </span>
+          </div>
+          <div class="fnd-row">
+            <label class="mainck"><span class="fnd-9-num">③</span><input type="checkbox" id="fnd-s3"> 舌の汚れ</label>
+            <span class="sub">
+              <select id="fnd-s3r"><option>全体</option><option>一部</option></select>
+              <select id="fnd-s3a"><option>少量</option><option>中量</option><option>多量</option></select>
+            </span>
+          </div>
+          <div class="fnd-row">
+            <label class="mainck"><span class="fnd-9-num">④</span><input type="checkbox" id="fnd-s4"> 歯ぐきの腫れあり</label>
+          </div>
+          <div class="fnd-row">
+            <label class="mainck"><span class="fnd-9-num">⑤</span><input type="checkbox" id="fnd-s5"> 歯ぐきの出血あり</label>
+          </div>
+          <div class="fnd-row">
+            <label class="mainck"><span class="fnd-9-num">⑥</span><input type="checkbox" id="fnd-s6"> 奥歯での咬合不可</label>
+          </div>
+          <div class="fnd-row">
+            <label class="mainck"><span class="fnd-9-num">⑦</span><input type="checkbox" id="fnd-s7"> むせあり</label>
+          </div>
+          <div class="fnd-row">
+            <label class="mainck"><span class="fnd-9-num">⑧</span><input type="checkbox" id="fnd-s8"> ご自身でうがい不可</label>
+          </div>
+          <div class="fnd-row">
+            <label class="mainck"><span class="fnd-9-num">⑨</span><input type="checkbox" id="fnd-s9"> 食物の溜め込みあり</label>
+            <span class="sub">
+              <select id="fnd-s9a"><option>少量</option><option>中量</option><option>多量</option></select>
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ③ 総合評価 -->
+      <div class="fnd-sec">
+        <div class="fnd-sec-h">総合評価</div>
+        <div class="fnd-sec-b">
+          <div class="fnd-row">
+            <span style="min-width:140px;font-weight:600;">歯科診療の必要度：</span>
+            <label class="ri" style="padding:2px 8px;border:1px solid #ccc;border-radius:4px;cursor:pointer;"><input type="radio" name="fnd-pte" value="不要"> 不要</label>
+            <label class="ri" style="padding:2px 8px;border:1px solid #ccc;border-radius:4px;cursor:pointer;"><input type="radio" name="fnd-pte" value="必要" checked> 必要</label>
+            <label class="ri" style="padding:2px 8px;border:1px solid #ccc;border-radius:4px;cursor:pointer;color:#c0392b;"><input type="radio" name="fnd-pte" value="緊急"> 緊急</label>
+          </div>
+          <div class="fnd-row">
+            <span style="min-width:140px;font-weight:600;">口腔ケアの必要度：</span>
+            <label class="ri" style="padding:2px 8px;border:1px solid #ccc;border-radius:4px;cursor:pointer;"><input type="radio" name="fnd-pce" value="不要"> 不要</label>
+            <label class="ri" style="padding:2px 8px;border:1px solid #ccc;border-radius:4px;cursor:pointer;"><input type="radio" name="fnd-pce" value="必要" checked> 必要</label>
+            <label class="ri" style="padding:2px 8px;border:1px solid #ccc;border-radius:4px;cursor:pointer;color:#c0392b;"><input type="radio" name="fnd-pce" value="緊急"> 緊急</label>
+          </div>
+        </div>
+      </div>
+
+      <!-- ④ その他（チェックされた項目のみ印刷に表示） -->
+      <div class="fnd-sec">
+        <div class="fnd-sec-h">その他（チェック項目のみ印刷に出力）</div>
+        <div class="fnd-sec-b">
+          <div class="fnd-row">
+            <label class="mainck"><input type="checkbox" id="fnd-o-calc"> 歯石の付着</label>
+            <span class="sub">
+              <select id="fnd-o-calcr"><option>全体</option><option>一部</option></select>
+            </span>
+          </div>
+          <div class="fnd-row">
+            <label class="mainck"><input type="checkbox" id="fnd-o-dry"> 口腔内乾燥あり</label>
+          </div>
+          <div class="fnd-row">
+            <label class="mainck"><input type="checkbox" id="fnd-o-odor"> 口臭あり</label>
+          </div>
+          <div class="fnd-row" style="flex-direction:column;align-items:stretch;">
+            <div style="display:flex;justify-content:space-between;align-items:center;width:100%;">
+              <label style="font-size:11px;font-weight:600;">自由記述（50文字以内）</label>
+              <span class="charcnt" id="fnd-o-free-cnt">0/50</span>
+            </div>
+            <textarea id="fnd-o-free" rows="2" maxlength="60" oninput="onFndFreeInput()" placeholder="その他の所見を記入"></textarea>
+          </div>
+        </div>
+      </div>
+
+    </div>
+    <div class="fnd-acts">
+      <button class="fnd-btn fnd-btn-clear" onclick="clearFindingsModal()">🗑 クリア</button>
+      <button class="fnd-btn" onclick="closeFindings()">キャンセル</button>
+      <button class="fnd-btn fnd-btn-save" onclick="saveFindings()">✓ 保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- Excelインポートモーダル -->
+<div class="xl-modal" id="xl-modal" onclick="if(event.target===this)closeXlImport()">
+  <div class="xl-box">
+    <div class="xl-title">
+      <span>📥 Excelインポート</span>
+      <button class="xl-close" onclick="closeXlImport()">✕</button>
+    </div>
+    <div class="xl-drop" id="xl-drop"
+         ondragover="xlDrag(event,true)" ondragleave="xlDrag(event,false)" ondrop="xlDrop(event)">
+      <input type="file" accept=".xlsx,.xls,.csv" onchange="xlFile(this)" id="xl-file-input">
+      <div style="font-size:28px;margin-bottom:8px;">📊</div>
+      <div style="font-size:12px;color:#555;">Excelファイルをドロップ<br>またはクリックして選択</div>
+      <div style="font-size:10px;color:#aaa;margin-top:4px;">.xlsx / .xls / .csv</div>
+    </div>
+    <div class="xl-status" id="xl-status"></div>
+    <div class="xl-count" id="xl-count"></div>
+    <div class="xl-preview" id="xl-preview"><table id="xl-prev-tbl"></table></div>
+    <div class="xl-acts">
+      <button class="xl-btn xl-btn-cancel" onclick="closeXlImport()">キャンセル</button>
+      <button class="xl-btn" id="xl-import-btn" style="background:#aaa;color:white;" onclick="xlDoImport()" disabled>取込実行</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- 補助歯式2 入力ポップアップ -->
+<div id="sub2-popup" style="display:none;position:fixed;z-index:9999;background:#2c3e50;border:1px solid rgba(255,255,255,.3);border-radius:8px;padding:10px;box-shadow:0 4px 16px rgba(0,0,0,.5);min-width:200px;">
+  <div style="font-size:11px;color:white;margin-bottom:6px;font-weight:bold;">補助歯式2：<span id="sub2-popup-id" style="color:#e8c547;"></span></div>
+  <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px;">
+    <button class="s2pb" onclick="setSub2FromPopup('')" style="padding:3px 8px;border-radius:4px;border:1px solid #aaa;background:#aaa;color:#333;cursor:pointer;font-size:11px;">消去</button>
+    <button class="s2pb" onclick="setSub2FromPopup('Br')" style="padding:3px 8px;border-radius:4px;border:1px solid #8d6e63;background:#8d6e63;color:white;cursor:pointer;font-size:11px;">Br</button>
+    <button class="s2pb" onclick="setSub2FromPopup('|')" style="padding:3px 8px;border-radius:4px;border:1px solid #1565c0;background:#1565c0;color:white;cursor:pointer;font-size:11px;">｜</button>
+    <button class="s2pb" onclick="setSub2FromPopup('M1')" style="padding:3px 8px;border-radius:4px;border:1px solid #2e7d32;background:#2e7d32;color:white;cursor:pointer;font-size:11px;">M1</button>
+    <button class="s2pb" onclick="setSub2FromPopup('M2')" style="padding:3px 8px;border-radius:4px;border:1px solid #1b5e20;background:#1b5e20;color:white;cursor:pointer;font-size:11px;">M2</button>
+    <button class="s2pb" onclick="setSub2FromPopup('M3')" style="padding:3px 8px;border-radius:4px;border:1px solid #33691e;background:#33691e;color:white;cursor:pointer;font-size:11px;">M3</button>
+    <button class="s2pb" onclick="setSub2FromPopup('Ip')" style="padding:3px 8px;border-radius:4px;border:1px solid #ad1457;background:#ad1457;color:white;cursor:pointer;font-size:11px;">Ip植</button>
+    <button class="s2pb" onclick="setSub2FromPopup('+C')" style="padding:3px 8px;border-radius:4px;border:1px solid #e65100;background:#e65100;color:white;cursor:pointer;font-size:11px;">+C</button>
+    <button class="s2pb" onclick="setSub2FromPopup('ハセツ')" style="padding:3px 8px;border-radius:4px;border:1px solid #4a148c;background:#4a148c;color:white;cursor:pointer;font-size:11px;">ハセツ</button>
+    <button class="s2pb" onclick="setSub2FromPopup('セメ充')" style="padding:3px 8px;border-radius:4px;border:1px solid #006064;background:#006064;color:white;cursor:pointer;font-size:11px;">セメ充</button>
+    <button class="s2pb" onclick="setSub2FromPopup('鈎歯')" style="padding:3px 8px;border-radius:4px;border:1px solid #37474f;background:#37474f;color:white;cursor:pointer;font-size:11px;">鈎歯</button>
+  </div>
+  <button onclick="closeSub2Popup()" style="width:100%;padding:4px;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.2);color:white;border-radius:4px;cursor:pointer;font-size:10px;">✕ 閉じる</button>
+</div>
+
+</body>
+</html>
