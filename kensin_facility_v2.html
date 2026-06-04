@@ -309,6 +309,13 @@ select.nec-s{width:64px;border:1px solid #ccc;border-radius:3px;padding:3px 4px;
   .pf-photo .pf-dt{margin-bottom:0.7mm;font-size:8.5pt;}
   .pf-photo .pf-ti{margin-bottom:1.6mm;padding-bottom:1.1mm;font-size:12pt;}
   .pf-photo .pf-pt{margin-bottom:1.1mm;padding-bottom:0.7mm;font-size:9pt;}
+  /* 写真タイプ：ページを縦いっぱいに保ちフッターを最下部へ固定。
+     写真グリッドにmargin-bottom:autoで下の空きを伸ばす（写真は伸ばさない）。 */
+  .pf-photo{display:flex!important;flex-direction:column;min-height:268mm!important;}
+  .pf-photo .pf-adv-grow{flex:none!important;}
+  .pf-photo .pf-ft{margin-top:auto!important;}
+  .pf-pg-hrow .pf-p svg{height:100mm!important;max-height:100mm!important;}
+  .pf-pg-single .pf-p svg,.pf-pg-single .pf-p img{max-height:165mm!important;}
 }
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -1104,8 +1111,17 @@ function genForm(d,shared){
   const photoNums=[1,2,3,4].filter(n=>pd.ph&&pd.ph[n]);
   const hasPhoto=photoNums.length>0;
   const photoCnt=photoNums.length;
-  const gridCols=photoCnt===1?'1fr':'1fr 1fr';
-  const phMaxH=photoCnt<=2?48:72;  // 写真② 2枚まで1ページ／3枚以上は2ページ可
+  // レイアウト：1枚=単独、2枚=横並び、3枚以上=2列グリッド
+  const dims=pd.dims||{};
+  let gridCols, stackMode;
+  if(photoCnt===1){gridCols='1fr';stackMode='single';}
+  else if(photoCnt<=2){gridCols='1fr 1fr';stackMode='hrow';}  // 2枚は横並び
+  else{gridCols='1fr 1fr';stackMode='grid';}                 // 3枚以上はグリッド
+  // 写真の最大高さ(mm)
+  let phMaxH;
+  if(photoCnt>=3){phMaxH=72;}
+  else if(stackMode==='hrow'){phMaxH=120;}                   // 横並び（CSSで下部まで伸ばす）
+  else{phMaxH=170;}                                          // 1枚
 
   // ── 歯式凡例（v1.1: 歯式タイプのみ）
   const legendHtml=`<div class="pf-legend">
@@ -1131,8 +1147,8 @@ function genForm(d,shared){
   // 写真案内＋写真本体は最下部
   const photoBlock=hasPhoto?`<div class="pf-note">お口の状態は口腔内画像をご覧ください。（画像が${photoCnt}枚あります）</div>
 <div class="pf-pb">現在のお口の状態</div>
-<div style="display:grid;grid-template-columns:${gridCols};gap:3mm;">
-${photoNums.map(n=>`<div class="pf-p">${mkPrintPhSVG(rowId,n,phMaxH)}<div class="pf-pc">${esc((pd.caps||{})[n]||'')||'&nbsp;'}</div></div>`).join('')}
+<div class="pf-photo-grid pf-pg-${stackMode}" style="display:grid;grid-template-columns:${gridCols};gap:3mm;">
+${photoNums.map(n=>`<div class="pf-p">${mkPrintPhSVG(rowId,n,phMaxH,stackMode==='hrow'?1.15:0)}<div class="pf-pc">${esc((pd.caps||{})[n]||'')||'&nbsp;'}</div></div>`).join('')}
 </div>`:'';
 
   // 総合評価テーブル
@@ -1186,7 +1202,7 @@ ${evalTable}
   }
 
   // ── 写真タイプ：従来の縦並び ─────
-  return `<div class="pf pf-photo">
+  return `<div class="pf pf-photo${(hasPhoto&&photoCnt<=2)?' pf-photo-fill':''}">
 ${date?`<div class="pf-dt">${date}</div>`:''}
 <div class="pf-ti">歯　科　健　診　結　果　書</div>
 <div class="pf-pt"><div><strong>施設名：</strong>${facRoom}</div><div><strong>受診者名：</strong>${pat}　様</div></div>
@@ -1206,7 +1222,7 @@ ${otherLines.length?`<div class="pf-bx">
   <div class="pf-bd fac-bd">${otherLines.join('')}</div>
 </div>`:''}
 
-<div class="pf-bx">
+<div class="pf-bx pf-adv-grow">
   <div class="pf-bh" style="text-align:center;">【健診結果についてのアドバイス】</div>
   <div class="pf-bd" style="padding:3mm 4mm;">
     <div style="margin-bottom:2mm;"><strong style="color:#1a3f6f;">● 治療について</strong><br>${advT||'<span style="color:#bbb;">（記載なし）</span>'}</div>
@@ -2011,7 +2027,7 @@ function saveRecord(){
 }
 
 // genForm用：写真SVG（印刷用）
-function mkPrintPhSVG(rowId,n,maxH){
+function mkPrintPhSVG(rowId,n,maxH,frameRatio){
   const saved=mpCurrentRowId;
   mpCurrentRowId=rowId;
   const d=patientPhotos[rowId]||{};
@@ -2019,12 +2035,27 @@ function mkPrintPhSVG(rowId,n,maxH){
   const dim=(d.dims||{})[n]||{w:1200,h:900};
   const {w,h}=dim;
   const annList=(d.annos||{})[n]||[];
-  const p=[];
-  if(img){
-    p.push(`<image href="${img}" x="0" y="0" width="${w}" height="${h}" preserveAspectRatio="xMidYMid meet"/>`);
-  }else{
-    return `<div class="pf-pe">写真${n}</div>`;
+  if(!img){ mpCurrentRowId=saved; return `<div class="pf-pe">写真${n}</div>`; }
+  // frameRatio が指定された場合：固定比率の枠の中央に画像を配置（ブラウザ非依存センタリング）
+  if(frameRatio){
+    // 枠サイズ（viewBox）。幅100基準、高さ=100*ratio
+    const FW=100, FH=Math.round(100*frameRatio);
+    // 画像を枠内に収める倍率（contain）
+    const scale=Math.min(FW/w, FH/h);
+    const dw=w*scale, dh=h*scale;
+    const ox=(FW-dw)/2, oy=(FH-dh)/2;  // 中央配置のオフセット
+    const p=[`<image href="${img}" x="${ox.toFixed(2)}" y="${oy.toFixed(2)}" width="${dw.toFixed(2)}" height="${dh.toFixed(2)}" preserveAspectRatio="none"/>`];
+    // アノテーション（画像座標→枠座標へ変換）
+    annList.forEach(a=>{
+      const sv=mPhAsvg(a,w,h); // 元座標系
+      // 元はw×h座標系なので、g変換で枠座標に乗せる
+      p.push(`<g transform="translate(${ox.toFixed(2)},${oy.toFixed(2)}) scale(${scale.toFixed(4)})">${sv}</g>`);
+    });
+    mpCurrentRowId=saved;
+    return `<svg viewBox="0 0 ${FW} ${FH}" style="width:100%;height:100%;display:block;background:#f0f0f0;" preserveAspectRatio="xMidYMid meet">${p.join('')}</svg>`;
   }
+  // 従来方式（frameRatio未指定）
+  const p=[`<image href="${img}" x="0" y="0" width="${w}" height="${h}" preserveAspectRatio="xMidYMid meet"/>`];
   annList.forEach(a=>p.push(mPhAsvg(a,w,h)));
   mpCurrentRowId=saved;
   return `<svg viewBox="0 0 ${w} ${h}" style="width:100%;max-height:${maxH||60}mm;display:block;background:#f0f0f0;" preserveAspectRatio="xMidYMid meet">${p.join('')}</svg>`;
