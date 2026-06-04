@@ -376,6 +376,7 @@ select.nec-s{width:64px;border:1px solid #ccc;border-radius:3px;padding:3px 4px;
   <a id="xl-tmpl-link" href="#" download="kensin_import_template.xlsx" style="display:none;"></a>
   <button class="tbtn" style="background:#1a3f6f;color:white;border-color:#1a3f6f;" onclick="document.getElementById('draft-file-input').click()">📲 医院の下書きを読込</button>
   <input id="draft-file-input" type="file" accept=".json,application/json" style="display:none;" onchange="loadDraftFile(this)">
+  <button class="tbtn" style="background:#6f4e1a;color:white;border-color:#6f4e1a;" onclick="exportJSON()">💾 JSON書き出し</button>
   <span id="save-status" style="margin-left:auto;font-size:11px;color:#1a6b3c;font-weight:bold;">💾 自動保存</span>
   <span class="pcount" id="pcount" style="margin-left:16px;">0名</span>
 </div>
@@ -545,12 +546,39 @@ function setTcTool(t,el){
   el.classList.add('active');
 }
 function clickTcTooth(id,evt){
+  if(_tcDragDidMove){_tcDragDidMove=false;return;} // なぞり直後のclick抑止
   if(showSub2Mode){openSub2Popup(id,evt||window.event);return;}
   if(tcTool===''){delete tcSt[id];}
   else if(tcSt[id]===tcTool){delete tcSt[id];}
   else{tcSt[id]=tcTool;}
   renderTcModal();
 }
+/* ── 歯式のなぞり複数選択（メイン記号モード時のみ） ── */
+let _tcDragging=false, _tcDragApplied={}, _tcDragDidMove=false;
+function tcDragStart(id,evt){
+  if(showSub2Mode||tcIsAnno)return;     // sub2/書込モード時はなぞり無効
+  _tcDragging=true; _tcDragApplied={}; _tcDragDidMove=false;
+  _tcDragApplied[id]=1;
+  // 開始歯にも適用（単発タップ相当はclickに任せ、ここでは塗らない）
+}
+function tcDragEnter(id){
+  if(!_tcDragging)return;
+  if(_tcDragApplied[id])return;
+  _tcDragApplied[id]=1;
+  _tcDragDidMove=true;
+  if(tcTool==='')delete tcSt[id]; else tcSt[id]=tcTool; // なぞりは塗り
+  renderTcModal();
+}
+function tcDragEnd(){_tcDragging=false;_tcDragApplied={};}
+document.addEventListener('mouseup',tcDragEnd);
+document.addEventListener('touchend',tcDragEnd);
+document.addEventListener('touchmove',function(e){
+  if(!_tcDragging)return;
+  const t=e.touches[0]; if(!t)return;
+  const el=document.elementFromPoint(t.clientX,t.clientY);
+  const g=el&&el.closest('[data-tid]');
+  if(g){e.preventDefault();tcDragEnter(g.dataset.tid);}
+},{passive:false});
 function sym2(s){return s==='x'?'×':s==='o'?'○':s;}
 /* renderTcModal → 下部の拡張版を使用 */
 
@@ -2161,9 +2189,9 @@ function renderTcModal(){
     const dx=t.cx-acx,dy=t.cy-acy;
     const mag=Math.sqrt(dx*dx+dy*dy)||1;
     const nx=+(t.cx+18*dx/mag).toFixed(1), ny=+(t.cy+18*dy/mag+3.5).toFixed(1);
-    p.push(`<g onclick="clickTcTooth('${t.id}')" style="cursor:${tcIsAnno?'crosshair':'pointer'};">
+    p.push(`<g data-tid="${t.id}" onmousedown="tcDragStart('${t.id}',event)" onmouseenter="tcDragEnter('${t.id}')" ontouchstart="tcDragStart('${t.id}',event)" onclick="clickTcTooth('${t.id}')" style="cursor:${tcIsAnno?'crosshair':'pointer'};">
       <circle cx="${t.cx}" cy="${t.cy}" r="9" fill="${fill}" stroke="${stroke}" stroke-width="${sw}"/>
-      ${st?`<text x="${t.cx}" y="${t.cy+3.5}" font-size="${fs}" text-anchor="middle" fill="${tc}" font-weight="bold" font-family="sans-serif">${sym2(st)}</text>`:''}
+      ${st?`<text x="${t.cx}" y="${t.cy+3.5}" font-size="${fs}" text-anchor="middle" fill="${tc}" font-weight="bold" font-family="sans-serif" pointer-events="none">${sym2(st)}</text>`:''}
     </g>
     <text x="${nx}" y="${ny}" font-size="8" text-anchor="middle" fill="#555" font-family="sans-serif" pointer-events="none">${t.n}</text>`);
   }
@@ -2426,6 +2454,33 @@ function _refreshRecordBtn(tr){
   tb.classList.toggle('has-data',l.length>0);
 }
 
+/* ── JSON書き出し（写真はファイル名のみ・base64本体は除外） ── */
+function exportJSON(){
+  const st=collectState();
+  if(!st.rows||st.rows.length===0){alert('データがありません。');return;}
+  // 写真のbase64本体を除去し、ファイル名のみ残す（軽量化）
+  st.rows.forEach(r=>{
+    if(r.photos){
+      const fn=(r.photos.fileNames)||{};
+      r.photos={fileNames:{1:fn[1]||'',2:fn[2]||'',3:fn[3]||'',4:fn[4]||''}, _stripped:true};
+    }
+  });
+  // ファイル名：日付_訪問先（1名なら _患者氏名）
+  function safeN(s){return String(s||'').replace(/[\\/:*?"<>|\s]/g,'_');}
+  const d=new Date();
+  const ymd=''+d.getFullYear()+('0'+(d.getMonth()+1)).slice(-2)+('0'+d.getDate()).slice(-2);
+  const fac=safeN(st.shared.fac)||'訪問先';
+  let fname=ymd+'_'+fac;
+  if(st.rows.length===1)fname+='_'+(safeN(st.rows[0].name)||'無名');
+  fname+='.json';
+  const blob=new Blob([JSON.stringify(st)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download=fname;
+  document.body.appendChild(a);a.click();a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),2000);
+  _setSaveStatus('💾 JSON書き出し完了','#6f4e1a');
+}
+
 /* ── 医院の下書きファイル(JSON)を読み込む ── */
 function loadDraftFile(input){
   const f=input.files&&input.files[0];
@@ -2474,7 +2529,14 @@ function restoreState(st){
       const tb=tr.querySelector('.tooth-btn');
       if(tb&&r.sub2)tb.dataset.sub2=r.sub2;
       if(r.annos&&r.annos.length)patientAnnos[tr.id]=r.annos;
-      if(r.photos)patientPhotos[tr.id]=r.photos;
+      if(r.photos){
+        const pp=r.photos;
+        // ファイル名のみの軽量データ(_stripped)でも構造を補完
+        if(!pp.ph)pp.ph={1:null,2:null,3:null,4:null};
+        if(!pp.dims)pp.dims={};
+        if(!pp.fileNames)pp.fileNames={1:'',2:'',3:'',4:''};
+        patientPhotos[tr.id]=pp;
+      }
       const pc=tr.querySelector('.prev-ck');
       if(pc&&r.prevChecked===false){pc.checked=false;updatePrevSelectionVisual(pc);}
       _refreshRecordBtn(tr);

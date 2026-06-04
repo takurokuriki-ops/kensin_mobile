@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>健診下書きツール 操作マニュアル</title>
+<style>
+:root{
+  --green:#1a6b3c; --green-d:#0f4f2a; --blue:#1a3f6f;
+  --line:#d9dddb; --txt:#1c1c1c; --sub:#555; --soft:#f4f7f5;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+  color:var(--txt);line-height:1.7;background:#e9ece9;padding:24px 12px;
+}
+.sheet{
+  max-width:820px;margin:0 auto;background:#fff;padding:40px 44px;
+  box-shadow:0 2px 16px rgba(0,0,0,.1);border-radius:6px;
+}
+
+/* 見出し */
+.title{
+  border-bottom:4px solid var(--green);padding-bottom:14px;margin-bottom:8px;
+}
+.title h1{font-size:26px;color:var(--green-d);font-weight:800;letter-spacing:.02em;}
+.title .sub{font-size:14px;color:var(--sub);margin-top:4px;}
+
+.intro{
+  background:var(--soft);border-left:5px solid var(--green);
+  padding:14px 18px;margin:22px 0 30px;font-size:14.5px;border-radius:0 6px 6px 0;
+}
+.intro b{color:var(--green-d);}
+
+/* セクション */
+.sec{margin-bottom:34px;page-break-inside:avoid;}
+.sec-h{
+  display:flex;align-items:center;gap:10px;margin-bottom:16px;
+  border-bottom:2px solid var(--line);padding-bottom:8px;
+}
+.sec-h .num{
+  background:var(--green);color:#fff;min-width:32px;height:32px;border-radius:16px;padding:0 9px;
+  display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;flex-shrink:0;
+}
+.sec-h h2{font-size:19px;color:var(--green-d);font-weight:800;}
+
+/* ステップ */
+.steps{list-style:none;counter-reset:st;}
+.steps li{
+  counter-increment:st;position:relative;padding:10px 0 10px 44px;font-size:15px;
+  border-bottom:1px dashed #e2e6e3;
+}
+.steps li:last-child{border-bottom:none;}
+.steps li::before{
+  content:counter(st);position:absolute;left:6px;top:10px;
+  background:#e8f3ec;color:var(--green-d);width:28px;height:28px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;
+}
+.steps li b{color:var(--green-d);}
+
+/* ボタン見本 */
+.btn-demo{
+  display:inline-flex;align-items:center;gap:4px;padding:4px 12px;border-radius:7px;
+  font-size:13.5px;font-weight:700;color:#fff;white-space:nowrap;vertical-align:middle;
+}
+.b-green{background:var(--green);}
+.b-blue{background:var(--blue);}
+.b-save{background:#6f4e1a;}
+.b-line{background:#06c755;}
+
+/* 注意ボックス */
+.note{
+  background:#fff8ec;border:1.5px solid #f0c674;border-radius:8px;
+  padding:13px 16px;margin-top:14px;font-size:14px;
+}
+.note .lab{font-weight:800;color:#b8860b;display:block;margin-bottom:4px;}
+
+.warn{
+  background:#fdeeee;border:1.5px solid #e0a0a0;border-radius:8px;
+  padding:13px 16px;margin-top:14px;font-size:14px;
+}
+.warn .lab{font-weight:800;color:#c0392b;display:block;margin-bottom:4px;}
+
+/* フロー図 */
+.flow{
+  display:flex;flex-wrap:wrap;align-items:center;gap:8px;justify-content:center;
+  background:var(--soft);border-radius:10px;padding:20px 16px;margin:8px 0;
+}
+.flow .box{
+  background:#fff;border:2px solid var(--green);border-radius:10px;
+  padding:12px 16px;font-size:14px;font-weight:700;color:var(--green-d);text-align:center;min-width:130px;
+}
+.flow .arr{font-size:22px;color:var(--green);font-weight:800;}
+
+/* 終わり */
+.foot{
+  margin-top:36px;border-top:2px solid var(--line);padding-top:14px;
+  font-size:12.5px;color:var(--sub);text-align:center;
+}
+
+@media print{
+  @page{size:A4;margin:14mm 14mm;}
+  body{background:#fff;padding:0;font-size:13px;}
+  .sheet{box-shadow:none;border-radius:0;max-width:none;padding:0;}
+  .title h1{font-size:22px;}
+  .sec{margin-bottom:22px;page-break-inside:avoid;}
+  .sec-h h2{font-size:17px;}
+  .intro{margin:16px 0 22px;}
+  .steps li{padding:7px 0 7px 42px;font-size:13.5px;}
+  .flow{padding:14px 10px;}
+  .flow .box{padding:9px 12px;min-width:110px;font-size:13px;}
+  .note,.warn{padding:10px 14px;}
+}
+</style>
+</head>
+<body>
+<div class="sheet">
+
+  <div class="title">
+    <h1>🦷 健診 下書きツール 操作マニュアル</h1>
+    <div class="sub">スマホ・タブレットで健診結果を入力し、担当者へ送るまでの手順です</div>
+  </div>
+
+  <div class="intro">
+    このツールは<b>手書きの下書きの代わり</b>に、スマホやタブレットで健診結果を入力するものです。
+    入力したデータは<b>ファイルにして担当者へLINEで送る</b>だけ。難しい操作はありません。<br>
+    口腔内の記録は、患者さんごとに <b>「歯式を登録する」</b> か <b>「写真を撮影する」</b> の
+    <b>どちらかを選びます</b>（両方でも、どちらか一方でも構いません）。
+  </div>
+
+  <div class="sec" style="margin-bottom:26px;">
+    <div class="sec-h"><span class="num">URL</span><h2>ツールを開くアドレス</h2></div>
+    <p style="font-size:14px;margin-bottom:8px;">下のアドレスをスマホ・タブレットのブラウザで開いてください（ブックマーク推奨）。</p>
+    <div style="background:#eef4f0;border:2px solid var(--green);border-radius:8px;
+      padding:14px 16px;font-size:15px;font-weight:700;color:var(--green-d);word-break:break-all;text-align:center;">
+      https://takurokuriki-ops.github.io/kensin_mobile/kensin_draft_v1.html
+    </div>
+  </div>
+
+  <!-- 全体の流れ -->
+  <div class="sec">
+    <div class="sec-h"><span class="num">★</span><h2>全体の流れ</h2></div>
+    <div class="flow">
+      <div class="box">① 共通情報を<br>入力</div>
+      <div class="arr">→</div>
+      <div class="box">② 患者ごとに<br>入力</div>
+      <div class="arr">→</div>
+      <div class="box">③ データを<br>保存して送る</div>
+      <div class="arr">→</div>
+      <div class="box">④ 写真を<br>送る（あれば）</div>
+    </div>
+  </div>
+
+  <!-- ① 共通情報 -->
+  <div class="sec">
+    <div class="sec-h"><span class="num">1</span><h2>共通情報を入力する</h2></div>
+    <ul class="steps">
+      <li>画面いちばん上の<b>「📋 共通情報」</b>に、<b>施設名・健診日・医師名・医院名</b>を入力します。</li>
+      <li>健診日は<b>カレンダーから選ぶ</b>だけ。最初から今日の日付が入っています。</li>
+    </ul>
+  </div>
+
+  <!-- ② 患者ごとの入力 -->
+  <div class="sec">
+    <div class="sec-h"><span class="num">2</span><h2>患者ごとに入力する</h2></div>
+    <ul class="steps">
+      <li>患者カードに<b>氏名・居室</b>を入力します。</li>
+      <li>患者を増やすときは、下の <span class="btn-demo b-green">＋ 患者を追加</span> を押します。</li>
+      <li><b>治療が必要な項目・口腔ケアの項目</b>は、当てはまるボタンをタップします（もう一度押すと解除）。</li>
+      <li><b>メモ欄</b>には、気づいた点を簡単に書きます（任意）。</li>
+      <li><b>口腔内の記録は、歯式か写真のどちらかを選びます。</b>
+        歯で記録する場合は下の<b>「🦷 歯式」</b>、写真で記録する場合は<b>「📷 写真」</b>を使います。</li>
+    </ul>
+
+    <div class="note">
+      <span class="lab">🦷 歯式の入力方法</span>
+      <span class="btn-demo b-green">＋ 歯式を入力</span> を押すと歯の図が開きます。<br>
+      ・上のタブで <span class="btn-demo b-green">🦷 歯式記号</span>（虫歯・欠損など）と
+      <span class="btn-demo b-green">🌉 補助記号</span>（ブリッジ・入れ歯のバネなど）を切り替えられます。<br>
+      ・<b>記号を選んでから歯をタップ</b>します。<b>指でなぞると、複数の歯にまとめて</b>付けられます。<br>
+      ・同じ記号をもう一度タップすると消えます。<br>
+      ・入力できたら <span class="btn-demo b-green">この内容で決定</span> を押します。
+    </div>
+  </div>
+
+  <!-- ③ データを送る -->
+  <div class="sec">
+    <div class="sec-h"><span class="num">3</span><h2>データを保存して担当者へ送る</h2></div>
+    <ul class="steps">
+      <li>入力が終わったら、画面下の <span class="btn-demo b-save">💾 データを保存して送る</span> を押します。</li>
+      <li><b>データのファイル（.json）</b>が保存されます。</li>
+      <li>LINEのトークを開き、<b>「＋」→「ファイル」</b>を選びます。</li>
+      <li>保存した<b>.jsonファイル</b>を選んで、担当者へ送信します。</li>
+    </ul>
+    <div class="note">
+      <span class="lab">📱 iPhone・iPadの場合</span>
+      保存ボタンを押した後、画面が出たら
+      <b>「その他」→「"ファイル"に保存」</b>を選び、<b>保存先（例：このiPhone内／iCloud Drive）を選んで保存</b>します。<br>
+      その後、LINEの「＋」→「ファイル」から、いま保存した場所を開いて送信してください。
+    </div>
+    <div class="warn">
+      <span class="lab">⚠ 送るときの注意</span>
+      かならず <b>「ファイル」</b>から送ってください。
+      「写真」や「アルバム」から送ると、正しく届きません。
+    </div>
+  </div>
+
+  <!-- ④ 写真を送る -->
+  <div class="sec">
+    <div class="sec-h"><span class="num">4</span><h2>写真がある場合（任意）</h2></div>
+    <ul class="steps">
+      <li>患者カードの <span class="btn-demo b-blue">📷 写真を撮る／選ぶ</span> で撮影します。</li>
+      <li>撮った写真の下にある <span class="btn-demo b-green">⬇ 保存</span> を押すと、
+        <b>「日付＿氏名＿番号」</b>という名前で写真が保存されます。</li>
+      <li>LINEの <b>「＋」→「ファイル」</b>から、保存した写真を送ります。</li>
+    </ul>
+    <div class="warn">
+      <span class="lab">⚠ 写真も「ファイル」から</span>
+      写真も、LINEの「写真」ではなく <b>「ファイル」</b> から送ってください。
+      名前と画質をそのまま保てます。
+    </div>
+  </div>
+
+  <!-- 困ったとき -->
+  <div class="sec">
+    <div class="sec-h"><span class="num">？</span><h2>困ったとき</h2></div>
+    <ul class="steps">
+      <li><b>入力が消えた？</b> → 入力内容は自動で保存されます。同じ画面をもう一度開けば残っています。</li>
+      <li><b>患者を消したい</b> → 患者カードの右上の <b>🗑（ゴミ箱）</b>を押します。</li>
+      <li><b>写真を消したい</b> → 写真の右上の <b>×</b> を押します。</li>
+    </ul>
+  </div>
+
+  <div class="foot">
+    健診 下書きツール 操作マニュアル ／ ご不明な点は担当者までご連絡ください
+  </div>
+
+</div>
+</body>
+</html>

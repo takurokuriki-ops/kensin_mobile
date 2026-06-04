@@ -71,14 +71,18 @@ body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto
 
 /* 写真 */
 .photo-area{margin-top:8px;}
-.photo-thumbs{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;}
-.photo-thumb{position:relative;width:72px;height:72px;border-radius:8px;overflow:hidden;
+.photo-thumbs{display:flex;flex-wrap:wrap;gap:12px;margin-top:10px;}
+.photo-item{width:108px;display:flex;flex-direction:column;gap:6px;}
+.photo-thumb{position:relative;width:108px;height:108px;border-radius:10px;overflow:hidden;
   border:1px solid var(--line);}
 .photo-thumb img{width:100%;height:100%;object-fit:cover;}
-.photo-thumb .rm{position:absolute;top:2px;right:2px;background:rgba(192,57,43,.92);color:#fff;
-  border:none;border-radius:50%;width:20px;height:20px;font-size:13px;cursor:pointer;line-height:1;}
-.photo-thumb .dl{position:absolute;bottom:0;left:0;right:0;background:rgba(26,107,60,.92);color:#fff;
-  border:none;font-size:9px;padding:2px;cursor:pointer;}
+.photo-thumb .rm{position:absolute;top:4px;right:4px;background:rgba(192,57,43,.95);color:#fff;
+  border:none;border-radius:50%;width:26px;height:26px;font-size:16px;cursor:pointer;line-height:1;
+  box-shadow:0 1px 3px rgba(0,0,0,.3);}
+.photo-dl{width:108px;padding:10px 4px;background:var(--green);color:#fff;border:none;border-radius:9px;
+  font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px;
+  box-shadow:0 2px 4px rgba(26,107,60,.3);}
+.photo-dl:active{background:var(--green-d);}
 .photo-add{width:100%;padding:10px;border:1.5px dashed var(--blue-l);border-radius:9px;
   background:#f0f6fb;color:var(--blue);font-size:13px;font-weight:700;cursor:pointer;
   display:flex;align-items:center;justify-content:center;gap:6px;}
@@ -126,6 +130,16 @@ body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto
 .q-c{background:#f0f0f0;color:#333;}
 .chart-hint{font-size:11px;color:var(--sub);margin-bottom:8px;text-align:center;}
 
+/* モード切替タブ */
+.mode-tabs{display:flex;gap:6px;margin-bottom:10px;}
+.mode-tab{flex:1;padding:9px;border:1.5px solid var(--line);border-radius:9px;background:#f5f5f5;
+  font-size:13px;font-weight:700;color:#777;cursor:pointer;}
+.mode-tab.active{background:var(--green);border-color:var(--green);color:#fff;}
+/* sub2(ブリッジ等)の歯セルバッジ */
+.sub2-badge{position:absolute;bottom:-2px;left:50%;transform:translateX(-50%);
+  font-size:9px;font-weight:700;color:#fff;border-radius:3px;
+  padding:0 2px;line-height:1.3;white-space:nowrap;max-width:130%;overflow:hidden;}
+
 /* リンク表示モーダル */
 .link-box{width:100%;padding:10px;border:1px solid var(--line);border-radius:8px;
   font-size:12px;background:#f7f7f7;word-break:break-all;max-height:120px;overflow-y:auto;color:#444;}
@@ -146,11 +160,10 @@ body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto
     <h2>📋 共通情報</h2>
     <div class="fld"><label>施設名</label><input id="s-fac" type="text" placeholder="例：○○ホーム"></div>
     <div class="fld-row">
-      <div class="fld"><label>健診日</label><input id="s-date" type="text" placeholder="例：令和8年6月3日"></div>
+      <div class="fld"><label>健診日</label><input id="s-date-picker" type="date" onchange="onDateChange()"><input id="s-date" type="hidden"></div>
       <div class="fld"><label>医師名</label><input id="s-doc" type="text" placeholder="例：石橋"></div>
     </div>
     <div class="fld"><label>医院名</label><input id="s-cli" type="text" placeholder="例：○○歯科"></div>
-    <div class="fld"><label>TEL</label><input id="s-tel" type="text" placeholder="例：050-0000-0000"></div>
   </div>
 
   <!-- 患者カード群 -->
@@ -173,13 +186,31 @@ body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto
       <button class="x" onclick="closeTooth()">✕</button>
     </div>
     <div class="modal-bd">
-      <div class="chart-hint">記号を選んでから歯をタップ／もう一度タップで消去</div>
-      <div class="sym-quick">
-        <button class="q-x" onclick="fillAll('x')">全部 ×欠損</button>
-        <button class="q-o" onclick="fillAll('o')">全部 ○健康</button>
-        <button class="q-c" onclick="fillAll('')">全消去</button>
+      <!-- モード切替 -->
+      <div class="mode-tabs">
+        <button class="mode-tab active" id="tab-main" onclick="setMode('main')">🦷 歯式記号</button>
+        <button class="mode-tab" id="tab-br" onclick="setMode('br')">🌉 補助記号</button>
       </div>
-      <div class="sym-bar" id="symBar"></div>
+
+      <!-- メイン記号モード -->
+      <div id="mainPanel">
+        <div class="chart-hint">記号を選んで歯をタップ（連続タップ・なぞりで複数可）／同じ記号を再タップで消去</div>
+        <div class="sym-quick">
+          <button class="q-x" onclick="fillAll('x')">全部 ×欠損</button>
+          <button class="q-o" onclick="fillAll('o')">全部 ○健康</button>
+          <button class="q-c" onclick="fillAll('')">全消去</button>
+        </div>
+        <div class="sym-bar" id="symBar"></div>
+      </div>
+
+      <!-- 補助記号モード -->
+      <div id="brPanel" style="display:none;">
+        <div class="chart-hint">記号を選んで歯をタップ／なぞって複数指定（メイン記号に重ねて付きます）<br>
+          <b style="color:#5d4037;">Br</b>＝支台、<b style="color:#1565c0;">｜</b>＝ポンティック、<b style="color:#2e7d32;">M1〜3</b>＝義歯バネ、<b style="color:#ad1457;">Ip</b>＝インプラント</div>
+        <div class="sym-bar" id="brBar"></div>
+        <button class="q-c" style="width:100%;margin-bottom:8px;" onclick="clearSub2()">補助記号を全消去</button>
+      </div>
+
       <div id="chartHost"></div>
     </div>
     <div class="modal-ft">
@@ -266,11 +297,29 @@ const C_KEYS=[
 
 function sym(s){return s==='x'?'×':s==='o'?'○':s;}
 
+// 補助記号（清書ツールのSUB2TOOLSと完全一致）
+const TOOLS_SUB2=[
+ {t:'Br', label:'Br 支台',  bg:'#5d4037', fg:'#fff'},
+ {t:'|',  label:'｜ ポンティック', bg:'#1565c0', fg:'#fff'},
+ {t:'M1', label:'M1 バネ',  bg:'#2e7d32', fg:'#fff'},
+ {t:'M2', label:'M2 バネ',  bg:'#1b5e20', fg:'#fff'},
+ {t:'M3', label:'M3 バネ',  bg:'#33691e', fg:'#fff'},
+ {t:'Ip', label:'Ip 植(ｲﾝﾌﾟﾗﾝﾄ)', bg:'#ad1457', fg:'#fff'},
+ {t:'+C', label:'+C',       bg:'#e65100', fg:'#fff'},
+ {t:'ハセツ', label:'ハセツ', bg:'#4a148c', fg:'#fff'},
+ {t:'セメ充', label:'セメ充', bg:'#006064', fg:'#fff'},
+ {t:'鈎歯', label:'鈎歯',    bg:'#37474f', fg:'#fff'}
+];
+
 /* ===== 状態 ===== */
 let pid=0;
 const photoStore={};   // cardId -> [{name, dataUrl}]
 let curCardId=null;     // 歯式編集中のカード
-let curToothSt={};      // 編集中の歯式
+let curToothSt={};      // 編集中の歯式（メイン）
+let curSub2={};         // 編集中のブリッジ/ポンティック（sub2）
+let editMode='main';    // 'main' or 'br'
+let isDragging=false;   // なぞり選択中フラグ
+let dragApplied={};     // なぞり中に処理済みの歯（重複防止）
 let curSym='x';         // 選択中の記号
 
 /* ===== 患者カード追加 ===== */
@@ -282,6 +331,7 @@ function addPatient(data){
   div.className='pcard';
   div.id=id;
   div.dataset.tooth=JSON.stringify(data.toothSt||{});
+  div.dataset.sub2=(typeof data.sub2==='string'&&data.sub2)?data.sub2:JSON.stringify(data.sub2||{});
   const tkeys=data.tkeys||[], ckeys=data.ckeys||[];
 
   div.innerHTML=`
@@ -351,23 +401,39 @@ function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').repl
 
 /* ===== 歯式モーダル ===== */
 function buildSymBar(){
-  const bar=document.getElementById('symBar');
-  bar.innerHTML=TOOLS_C.map(t=>
+  document.getElementById('symBar').innerHTML=TOOLS_C.map(t=>
     `<button class="sym-btn ${t.t===curSym?'sel':''}" style="background:${t.bg};color:${t.fg};"
        data-t="${t.t}" onclick="pickSym('${t.t}',this)">${t.label}</button>`).join('');
+  document.getElementById('brBar').innerHTML=TOOLS_SUB2.map(t=>
+    `<button class="sym-btn ${t.t===curSub2Sym?'sel':''}" style="background:${t.bg};color:${t.fg};"
+       data-t="${t.t}" onclick="pickSub2('${t.t}',this)">${t.label}</button>`).join('');
 }
+let curSub2Sym='Br';
 function pickSym(t,btn){
   curSym=t;
-  document.querySelectorAll('.sym-btn').forEach(b=>b.classList.remove('sel'));
+  document.querySelectorAll('#symBar .sym-btn').forEach(b=>b.classList.remove('sel'));
   if(btn)btn.classList.add('sel');
+}
+function pickSub2(t,btn){
+  curSub2Sym=t;
+  document.querySelectorAll('#brBar .sym-btn').forEach(b=>b.classList.remove('sel'));
+  if(btn)btn.classList.add('sel');
+}
+function setMode(m){
+  editMode=m;
+  document.getElementById('tab-main').classList.toggle('active',m==='main');
+  document.getElementById('tab-br').classList.toggle('active',m==='br');
+  document.getElementById('mainPanel').style.display=(m==='main')?'block':'none';
+  document.getElementById('brPanel').style.display=(m==='br')?'block':'none';
 }
 function openTooth(cardId){
   curCardId=cardId;
   const card=document.getElementById(cardId);
   curToothSt=JSON.parse(card.dataset.tooth||'{}');
+  curSub2=JSON.parse(card.dataset.sub2||'{}');
   const nm=card.querySelector('.pname').value.trim();
   document.getElementById('toothTitle').textContent=nm?(nm+' の歯式'):'歯式入力';
-  curSym='x';
+  curSym='x'; curSub2Sym='Br'; setMode('main');
   buildSymBar();
   renderChart();
   document.getElementById('toothModal').classList.add('open');
@@ -376,6 +442,7 @@ function closeTooth(){document.getElementById('toothModal').classList.remove('op
 function saveTooth(){
   const card=document.getElementById(curCardId);
   card.dataset.tooth=JSON.stringify(curToothSt);
+  card.dataset.sub2=JSON.stringify(curSub2);
   refreshToothBtn(curCardId);
   closeTooth();
   scheduleSave();
@@ -385,34 +452,70 @@ function fillAll(v){
   if(v)TD.forEach(t=>curToothSt[t.id]=v);
   renderChart();
 }
-function tapTooth(id){
-  if(curSym===''){delete curToothSt[id];}
-  else if(curToothSt[id]===curSym){delete curToothSt[id];}
-  else{curToothSt[id]=curSym;}
+function clearSub2(){curSub2={};renderChart();}
+
+// 歯への適用（モードで分岐）。force指定時はなぞり中で消去せず塗りのみ
+function applyTooth(id){
+  if(editMode==='main'){
+    if(curSym===''){delete curToothSt[id];}
+    else if(curToothSt[id]===curSym){delete curToothSt[id];}
+    else{curToothSt[id]=curSym;}
+  }else{
+    if(curSub2[id]===curSub2Sym){delete curSub2[id];}
+    else{curSub2[id]=curSub2Sym;}
+  }
+}
+function tapTooth(id){applyTooth(id);renderChart();}
+
+// なぞり選択（同じ歯を二重処理しない）
+function dragEnter(id){
+  if(!isDragging)return;
+  if(dragApplied[id])return;
+  dragApplied[id]=1;
+  const target=(editMode==='main')?curToothSt:curSub2;
+  const symv=(editMode==='main')?curSym:curSub2Sym;
+  if(symv==='')delete target[id]; else target[id]=symv; // なぞりは塗り（消去記号は除去）
   renderChart();
 }
+function startDrag(id){isDragging=true;dragApplied={};dragApplied[id]=1;applyTooth(id);renderChart();}
+function endDrag(){isDragging=false;dragApplied={};}
+
 function refreshToothBtn(cardId){
   const card=document.getElementById(cardId);
   const st=JSON.parse(card.dataset.tooth||'{}');
-  const n=Object.keys(st).length;
+  const s2=JSON.parse(card.dataset.sub2||'{}');
+  const n=Object.keys(st).length, nb=Object.keys(s2).length;
   const btn=document.getElementById(cardId+'-toothbtn');
-  if(n){btn.textContent='🦷 歯式 ('+n+'本) 入力済み';btn.classList.add('has');}
-  else{btn.textContent='＋ 歯式を入力';btn.classList.remove('has');}
+  if(n||nb){
+    let label='🦷 歯式 ('+n+'本';
+    if(nb)label+=' / ブリッジ'+nb;
+    label+=') 入力済み';
+    btn.textContent=label;btn.classList.add('has');
+  }else{btn.textContent='＋ 歯式を入力';btn.classList.remove('has');}
 }
 
-/* 歯式チャート（タップ可能なグリッド表示） */
+/* 歯式チャート（タップ・なぞり対応グリッド） */
 function renderChart(){
   const host=document.getElementById('chartHost');
   function cell(t){
     const s=curToothSt[t.id]||'';
+    const s2=curSub2[t.id]||'';
     const fill=s?SVG_FILL[s]:'#fff';
     const fg=s?SVG_TXT[s]:'#bbb';
     const bd=s?'#444':'#ccc';
-    return `<div onclick="tapTooth('${t.id}')" style="aspect-ratio:1;border:1.5px solid ${bd};border-radius:7px;
+    const s2def=TOOLS_SUB2.find(x=>x.t===s2);
+    const s2bg=s2def?s2def.bg:'#5d4037';
+    const badge=s2?`<span class="sub2-badge" style="background:${s2bg};">${s2==='|'?'｜':s2}</span>`:'';
+    return `<div data-id="${t.id}"
+      onmousedown="startDrag('${t.id}')" onmouseenter="dragEnter('${t.id}')"
+      ontouchstart="startDrag('${t.id}')"
+      style="position:relative;aspect-ratio:1;border:1.5px solid ${bd};border-radius:7px;
       background:${fill};color:${fg};display:flex;flex-direction:column;align-items:center;justify-content:center;
-      cursor:pointer;font-weight:700;font-size:${s&&s.length>2?'10px':'13px'};line-height:1;">
+      cursor:pointer;font-weight:700;font-size:${s&&s.length>2?'10px':'13px'};line-height:1;
+      ${s2?'box-shadow:0 0 0 2px '+s2bg+' inset;':''}user-select:none;-webkit-user-select:none;">
       <span>${s?sym(s):''}</span>
-      <span style="font-size:9px;color:#999;font-weight:400;margin-top:2px;">${t.n}</span></div>`;
+      <span style="font-size:9px;color:#999;font-weight:400;margin-top:2px;">${t.n}</span>
+      ${badge}</div>`;
   }
   const upR=TD.slice(0,8), upL=TD.slice(8,16), loR=TD.slice(16,24), loL=TD.slice(24,32);
   const grid=arr=>`<div style="display:grid;grid-template-columns:repeat(8,1fr);gap:4px;">${arr.map(cell).join('')}</div>`;
@@ -448,10 +551,12 @@ function renderThumbs(cardId){
   const nm=safeName(card.querySelector('.pname').value.trim());
   host.innerHTML=arr.map((p,i)=>{
     const fname=todayStr()+'_'+nm+'_'+(i+1)+'.jpg';
-    return `<div class="photo-thumb">
-      <img src="${p.dataUrl}">
-      <button class="rm" onclick="rmPhoto('${cardId}',${i})">×</button>
-      <button class="dl" onclick="dlPhoto('${cardId}',${i})">保存</button>
+    return `<div class="photo-item">
+      <div class="photo-thumb">
+        <img src="${p.dataUrl}">
+        <button class="rm" onclick="rmPhoto('${cardId}',${i})" title="この写真を削除">×</button>
+      </div>
+      <button class="photo-dl" onclick="dlPhoto('${cardId}',${i})">⬇ 保存</button>
     </div>`;
   }).join('');
 }
@@ -482,13 +587,13 @@ function collectState(){
       advT:card.querySelector('.advT').value.trim(),
       advC:card.querySelector('.advC').value.trim(),
       toothSt:JSON.parse(card.dataset.tooth||'{}'),
-      facility:null, sub2:'', annos:[], photos:null, prevChecked:true
+      facility:null, sub2:(card.dataset.sub2&&card.dataset.sub2!=='{}')?card.dataset.sub2:'', annos:[], photos:null, prevChecked:true
     });
   });
   return {v:1, ts:Date.now(), _draft:true,
     shared:{
       fac:gv('s-fac'), date:gv('s-date'), doc:gv('s-doc'),
-      cli:gv('s-cli'), tel:gv('s-tel'), rtype:'shashiki', legend:true
+      cli:gv('s-cli'), tel:'', rtype:'shashiki', legend:true
     },
     rows:rows};
 }
@@ -498,9 +603,14 @@ function gv(id){return (document.getElementById(id).value||'').trim();}
 function saveDataFile(){
   const st=collectState();
   if(st.rows.length===0){alert('患者を1人以上追加してください。');return;}
-  // ファイル名：施設名_日付.json（無ければ「健診下書き_日付」）
-  const fac=safeName(gv('s-fac'))||'健診下書き';
-  const fname=fac+'_'+todayStr()+'.json';
+  // ファイル名：日付_訪問先（施設名）。患者が1名のみ → 日付_訪問先_患者氏名
+  const fac=safeName(gv('s-fac'))||'訪問先';
+  let fname=todayStr()+'_'+fac;
+  if(st.rows.length===1){
+    const nm=safeName(st.rows[0].name)||'無名';
+    fname+='_'+nm;
+  }
+  fname+='.json';
   const json=JSON.stringify(st,null,0);
   const blob=new Blob([json],{type:'application/json'});
   const url=URL.createObjectURL(blob);
@@ -520,6 +630,8 @@ function scheduleSave(){clearTimeout(saveTimer);saveTimer=setTimeout(doSave,800)
 function doSave(){
   try{
     const st=collectState();
+    // 日付ピッカーのISO値も別途保持（復元用）
+    st._datePickerISO=document.getElementById('s-date-picker').value||'';
     // 写真は容量大のためlocalStorageには保存しない（別送り運用のため）
     localStorage.setItem(KEY,JSON.stringify(st));
     setSt('💾 保存済み');
@@ -532,12 +644,37 @@ function loadSaved(){
     if(!raw)return false;
     const st=JSON.parse(raw);
     const sh=st.shared||{};
-    sv('s-fac',sh.fac);sv('s-date',sh.date);sv('s-doc',sh.doc);sv('s-cli',sh.cli);sv('s-tel',sh.tel);
+    sv('s-fac',sh.fac);sv('s-date',sh.date);sv('s-doc',sh.doc);sv('s-cli',sh.cli);
+    if(st._datePickerISO)sv('s-date-picker',st._datePickerISO);
     (st.rows||[]).forEach(r=>addPatient(r));
     return (st.rows||[]).length>0;
   }catch(e){return false;}
 }
-function sv(id,v){if(v!=null)document.getElementById(id).value=v;}
+function sv(id,v){const el=document.getElementById(id);if(el&&v!=null)el.value=v;}
+
+/* ===== 日付（カレンダー → 和暦テキスト） ===== */
+function toWareki(iso){
+  // iso: "2026-06-03" → "令和8年6月3日"
+  if(!iso)return '';
+  const p=iso.split('-'); if(p.length<3)return iso;
+  const y=+p[0], m=+p[1], d=+p[2];
+  // 令和: 2019/5/1〜
+  let era='', ey=y;
+  if(y>2019||(y===2019)){era='令和';ey=y-2018;}
+  else{return y+'年'+m+'月'+d+'日';}
+  return era+ey+'年'+m+'月'+d+'日';
+}
+function onDateChange(){
+  const iso=document.getElementById('s-date-picker').value;
+  document.getElementById('s-date').value=toWareki(iso);
+  scheduleSave();
+}
+function setTodayDefault(){
+  const d=new Date();
+  const iso=d.getFullYear()+'-'+pad2(d.getMonth()+1)+'-'+pad2(d.getDate());
+  document.getElementById('s-date-picker').value=iso;
+  document.getElementById('s-date').value=toWareki(iso);
+}
 
 document.addEventListener('input',e=>{
   if(e.target.classList.contains('pname')){
@@ -547,10 +684,27 @@ document.addEventListener('input',e=>{
   scheduleSave();
 },true);
 
+/* なぞり選択の終了を全体で拾う */
+document.addEventListener('mouseup',endDrag);
+document.addEventListener('touchend',endDrag);
+// タッチで指の下の歯を検出してなぞり適用
+document.addEventListener('touchmove',e=>{
+  if(!isDragging)return;
+  const t=e.touches[0]; if(!t)return;
+  const el=document.elementFromPoint(t.clientX,t.clientY);
+  const cell=el&&el.closest('[data-id]');
+  if(cell){e.preventDefault();dragEnter(cell.dataset.id);}
+},{passive:false});
+
 /* ===== 初期化 ===== */
 (function(){
   const had=loadSaved();
   if(!had)addPatient();
+  // 日付ピッカー：保存済みがあればそれを尊重、なければ今日
+  const dp=document.getElementById('s-date-picker');
+  if(!dp.value){
+    setTodayDefault();
+  }
 })();
 </script>
 </body>
