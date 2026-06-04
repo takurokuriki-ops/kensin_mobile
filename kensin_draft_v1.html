@@ -206,7 +206,7 @@ body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto
       <!-- 補助記号モード -->
       <div id="brPanel" style="display:none;">
         <div class="chart-hint">記号を選んで歯をタップ／なぞって複数指定（メイン記号に重ねて付きます）<br>
-          <b style="color:#5d4037;">Br</b>＝支台、<b style="color:#1565c0;">｜</b>＝ポンティック、<b style="color:#2e7d32;">M1〜3</b>＝義歯バネ、<b style="color:#ad1457;">Ip</b>＝インプラント</div>
+          <b style="color:#1565c0;">｜</b><b style="color:#5d4037;">Br</b>＝ブリッジ、<b style="color:#2e7d32;">M1〜3</b>＝義歯バネ、<b style="color:#ad1457;">Ip</b>＝インプラント</div>
         <div class="sym-bar" id="brBar"></div>
         <button class="q-c" style="width:100%;margin-bottom:8px;" onclick="clearSub2()">補助記号を全消去</button>
       </div>
@@ -299,16 +299,16 @@ function sym(s){return s==='x'?'×':s==='o'?'○':s;}
 
 // 補助記号（清書ツールのSUB2TOOLSと完全一致）
 const TOOLS_SUB2=[
- {t:'Br', label:'Br 支台',  bg:'#5d4037', fg:'#fff'},
- {t:'|',  label:'｜ ポンティック', bg:'#1565c0', fg:'#fff'},
- {t:'M1', label:'M1 バネ',  bg:'#2e7d32', fg:'#fff'},
- {t:'M2', label:'M2 バネ',  bg:'#1b5e20', fg:'#fff'},
- {t:'M3', label:'M3 バネ',  bg:'#33691e', fg:'#fff'},
- {t:'Ip', label:'Ip 植(ｲﾝﾌﾟﾗﾝﾄ)', bg:'#ad1457', fg:'#fff'},
- {t:'+C', label:'+C',       bg:'#e65100', fg:'#fff'},
+ {t:'Br', label:'Br',  bg:'#5d4037', fg:'#fff'},
+ {t:'|',  label:'｜',  bg:'#1565c0', fg:'#fff'},
+ {t:'M1', label:'M1',  bg:'#2e7d32', fg:'#fff'},
+ {t:'M2', label:'M2',  bg:'#1b5e20', fg:'#fff'},
+ {t:'M3', label:'M3',  bg:'#33691e', fg:'#fff'},
+ {t:'Ip', label:'Ip植', bg:'#ad1457', fg:'#fff'},
+ {t:'+C', label:'+C',  bg:'#e65100', fg:'#fff'},
  {t:'ハセツ', label:'ハセツ', bg:'#4a148c', fg:'#fff'},
  {t:'セメ充', label:'セメ充', bg:'#006064', fg:'#fff'},
- {t:'鈎歯', label:'鈎歯',    bg:'#37474f', fg:'#fff'}
+ {t:'鈎歯', label:'鈎歯', bg:'#37474f', fg:'#fff'}
 ];
 
 /* ===== 状態 ===== */
