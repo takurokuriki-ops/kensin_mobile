@@ -465,7 +465,35 @@ function applyTooth(id){
     else{curSub2[id]=curSub2Sym;}
   }
 }
-function tapTooth(id){applyTooth(id);renderChart();}
+function tapTooth(id){applyTooth(id);updateCell(id);}
+
+// 1つの歯セルの見た目だけを更新（DOM全体を作り直さない＝なぞり中も安定）
+function updateCell(id){
+  const el=document.querySelector('#chartHost [data-id="'+id+'"]');
+  if(!el)return;
+  const s=curToothSt[id]||'';
+  const s2=curSub2[id]||'';
+  const fill=s?SVG_FILL[s]:'#fff';
+  const fg=s?SVG_TXT[s]:'#bbb';
+  const bd=s?'#444':'#ccc';
+  const s2def=TOOLS_SUB2.find(x=>x.t===s2);
+  const s2bg=s2def?s2def.bg:'#5d4037';
+  el.style.background=fill;
+  el.style.color=fg;
+  el.style.borderColor=bd;
+  el.style.fontSize=(s&&s.length>2?'10px':'13px');
+  el.style.boxShadow=s2?('0 0 0 2px '+s2bg+' inset'):'none';
+  el.dataset.sym=s; el.dataset.s2=s2;
+  const main=el.querySelector('.td-main');
+  if(main)main.textContent=s?sym(s):'';
+  // バッジの更新
+  let badge=el.querySelector('.sub2-badge');
+  if(s2){
+    if(!badge){badge=document.createElement('span');badge.className='sub2-badge';el.appendChild(badge);}
+    badge.style.background=s2bg;
+    badge.textContent=(s2==='|'?'｜':s2);
+  }else if(badge){badge.remove();}
+}
 
 // なぞり選択（同じ歯を二重処理しない）
 function dragEnter(id){
@@ -475,9 +503,13 @@ function dragEnter(id){
   const target=(editMode==='main')?curToothSt:curSub2;
   const symv=(editMode==='main')?curSym:curSub2Sym;
   if(symv==='')delete target[id]; else target[id]=symv; // なぞりは塗り（消去記号は除去）
-  renderChart();
+  updateCell(id);  // 1セルだけ更新
 }
-function startDrag(id){isDragging=true;dragApplied={};dragApplied[id]=1;applyTooth(id);renderChart();}
+function startDrag(id,evt){
+  if(evt&&evt.type==='touchstart'&&evt.cancelable)evt.preventDefault(); // スクロール抑止
+  isDragging=true;dragApplied={};dragApplied[id]=1;
+  applyTooth(id);updateCell(id);
+}
 function endDrag(){isDragging=false;dragApplied={};}
 
 function refreshToothBtn(cardId){
@@ -506,14 +538,15 @@ function renderChart(){
     const s2def=TOOLS_SUB2.find(x=>x.t===s2);
     const s2bg=s2def?s2def.bg:'#5d4037';
     const badge=s2?`<span class="sub2-badge" style="background:${s2bg};">${s2==='|'?'｜':s2}</span>`:'';
-    return `<div data-id="${t.id}"
-      onmousedown="startDrag('${t.id}')" onmouseenter="dragEnter('${t.id}')"
-      ontouchstart="startDrag('${t.id}')"
+    return `<div data-id="${t.id}" data-sym="${s}" data-s2="${s2}"
+      onmousedown="startDrag('${t.id}',event)" onmouseenter="dragEnter('${t.id}')"
+      ontouchstart="startDrag('${t.id}',event)"
       style="position:relative;aspect-ratio:1;border:1.5px solid ${bd};border-radius:7px;
       background:${fill};color:${fg};display:flex;flex-direction:column;align-items:center;justify-content:center;
       cursor:pointer;font-weight:700;font-size:${s&&s.length>2?'10px':'13px'};line-height:1;
+      touch-action:none;
       ${s2?'box-shadow:0 0 0 2px '+s2bg+' inset;':''}user-select:none;-webkit-user-select:none;">
-      <span>${s?sym(s):''}</span>
+      <span class="td-main">${s?sym(s):''}</span>
       <span style="font-size:9px;color:#999;font-weight:400;margin-top:2px;">${t.n}</span>
       ${badge}</div>`;
   }
@@ -687,13 +720,14 @@ document.addEventListener('input',e=>{
 /* なぞり選択の終了を全体で拾う */
 document.addEventListener('mouseup',endDrag);
 document.addEventListener('touchend',endDrag);
+document.addEventListener('touchcancel',endDrag);
 // タッチで指の下の歯を検出してなぞり適用
 document.addEventListener('touchmove',e=>{
   if(!isDragging)return;
   const t=e.touches[0]; if(!t)return;
   const el=document.elementFromPoint(t.clientX,t.clientY);
   const cell=el&&el.closest('[data-id]');
-  if(cell){e.preventDefault();dragEnter(cell.dataset.id);}
+  if(cell){if(e.cancelable)e.preventDefault();dragEnter(cell.dataset.id);}
 },{passive:false});
 
 /* ===== 初期化 ===== */
